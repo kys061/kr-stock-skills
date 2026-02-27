@@ -1,0 +1,43 @@
+{
+  "stock-trading-skills": {
+    "phase": "plan",
+    "matchRate": null,
+    "iterationCount": 0,
+    "startedAt": "2026-02-27T14:50:00Z",
+    "history": [
+      {
+        "action": "plan_created",
+        "timestamp": "2026-02-27T14:50:00Z",
+        "details": "Initial brainstorming document created with 11 use cases, 5 investor style guides, and 4 market condition strategies"
+      }
+    ]
+  },
+  "kr-stock-skills": {
+    "phase": "do",
+    "matchRate": null,
+    "iterationCount": 0,
+    "startedAt": "2026-02-27T15:30:00Z",
+    "history": [
+      {
+        "action": "plan_created",
+        "timestamp": "2026-02-27T15:30:00Z",
+        "details": "Korean stock market custom skills development plan - 44 skills (39 US ports + 5 KR-exclusive)"
+      },
+      {
+        "action": "plan_updated",
+        "timestamp": "2026-02-27T16:00:00Z",
+        "details": "Added Tier 1/Tier 2 architecture - PyKRX+FDR+DART for account-free start"
+      },
+      {
+        "action": "design_created",
+        "timestamp": "2026-02-27T16:30:00Z",
+        "details": "Phase 1 common module detailed design - KRClient unified API, 4 providers, utils, cache, 12-step implementation order"
+      },
+      {
+        "action": "do_started",
+        "timestamp": "2026-02-27T16:50:00Z",
+        "details": "Phase 1 common module implementation complete - 14 files, 4 providers, utils, models, 25/25 tests passed"
+      }
+    ]
+  }
+}
