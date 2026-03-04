@@ -1,3 +1,8 @@
+---
+name: kr-dart-disclosure-monitor
+description: DART 전자공시 10유형(실적/배당/자본/M&A/지배구조/지분/법적/IPO/규제/기타) 자동 분류, 이벤트 영향도 1-10 스코어링, 지분 변동 추적.
+---
+
 # kr-dart-disclosure-monitor
 
 DART 전자공시 10유형 분류, 이벤트 영향도 5단계, 지분 변동 추적, 리스크 스코어링 스킬.

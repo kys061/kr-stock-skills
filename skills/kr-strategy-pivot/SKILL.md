@@ -1,3 +1,8 @@
+---
+name: kr-strategy-pivot
+description: 백테스트 반복 최적화 정체를 감지하고 구조적으로 다른 전략 방향(피봇)을 제안. 로컬 옵티멈 탈출 지원.
+---
+
 # kr-strategy-pivot
 
 > 백테스트 반복 정체를 감지하고 구조적 피벗을 제안하는 스킬.

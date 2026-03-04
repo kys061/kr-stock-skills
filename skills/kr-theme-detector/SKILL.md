@@ -1,3 +1,8 @@
+---
+name: kr-theme-detector
+description: 한국 시장 테마(2차전지/AI/반도체 등) 트렌드 자동 탐지. 업종 로테이션과 테마 강도 분석.
+---
+
 # kr-theme-detector
 
 ## 개요

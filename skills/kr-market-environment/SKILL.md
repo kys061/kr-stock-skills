@@ -1,3 +1,8 @@
+---
+name: kr-market-environment
+description: 글로벌+한국 시장 종합 진단 리포트 생성. 글로벌 지수, 환율, 원자재, 투자자별 동향, Risk-On/Off 판정을 한 번에 분석.
+---
+
 # kr-market-environment
 
 > 한국 시장 환경 분석 스킬 - 글로벌+한국 시장 종합 진단 리포트 생성

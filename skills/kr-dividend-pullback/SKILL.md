@@ -1,3 +1,8 @@
+---
+name: kr-dividend-pullback
+description: 배당 성장률 12%+ & 수익률 1.5%+ 종목 중 RSI≤40 눌림목 타이밍을 탐지하는 고성장 배당주 풀백 스크리너.
+---
+
 # kr-dividend-pullback: 한국 배당 성장 풀백 스크리닝
 
 > 고성장 배당주 (3Y CAGR ≥ 8%) + RSI ≤ 40 타이밍 기반 진입 전략.

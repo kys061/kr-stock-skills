@@ -1,3 +1,8 @@
+---
+name: kr-edge-candidate
+description: 한국 시장 데이터 기반 엣지 후보 자동 탐지 및 파이프라인 내보내기. KOSPI200 종목에서 수급/기술적 시그널 기반 후보 선별.
+---
+
 # kr-edge-candidate
 
 > 한국 시장 데이터 기반 엣지 후보 자동 탐지 및 파이프라인 내보내기 스킬.

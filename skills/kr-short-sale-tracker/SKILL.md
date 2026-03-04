@@ -1,3 +1,8 @@
+---
+name: kr-short-sale-tracker
+description: PyKRX 기반 공매도 잔고 추이 분석, 숏커버/숏스퀴즈 시그널 탐지, Days-to-Cover 기반 리스크 스코어링.
+---
+
 # kr-short-sale-tracker
 
 한국 주식 시장의 공매도 비율 추이 분석, 숏커버 시그널 탐지, 리스크 스코어링 스킬.

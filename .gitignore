@@ -33,3 +33,6 @@ reports/
 # Data cache
 docs_cache/
 *.pkl
+
+# Analysis reports (local only)
+analysis/

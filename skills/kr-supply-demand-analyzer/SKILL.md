@@ -1,3 +1,8 @@
+---
+name: kr-supply-demand-analyzer
+description: 시장/섹터 레벨 수급을 7단계 시그널(Strong Buy~Strong Sell)로 분류, 14 섹터별 HHI 집중도 분석. 거시적 수급 전문.
+---
+
 # kr-supply-demand-analyzer
 
 한국 주식 시장의 시장/섹터 레벨 수급 동향과 유동성을 종합 분석하는 스킬.

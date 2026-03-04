@@ -1,3 +1,8 @@
+---
+name: kr-macro-regime
+description: 6-컴포넌트 크로스에셋 비율 분석(집중도/수익률곡선/신용/규모팩터/채권-주식/섹터)으로 매크로 레짐(RiskOn/Neutral/RiskOff/Crisis) 분류.
+---
+
 # kr-macro-regime
 
 한국 매크로 레짐 탐지기 — 6-컴포넌트 크로스에셋 비율 분석.

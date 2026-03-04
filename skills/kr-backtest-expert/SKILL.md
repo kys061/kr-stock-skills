@@ -1,3 +1,8 @@
+---
+name: kr-backtest-expert
+description: 5차원 스코어링(수익성/안정성/리스크/거래특성/강건성)으로 백테스트 결과를 100점 만점 평가하고 DEPLOY/REFINE/INCUBATE/ABANDON 판정. 한국 비용 모델(수수료 0.015%+거래세 0.23%+슬리피지 0.1%) 적용.
+---
+
 # kr-backtest-expert
 
 > 5차원 스코어링으로 백테스트 결과를 평가하고 DEPLOY/REFINE/ABANDON 판정.

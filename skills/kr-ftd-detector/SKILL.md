@@ -1,3 +1,8 @@
+---
+name: kr-ftd-detector
+description: KOSPI/KOSDAQ 이중 지수에서 William O'Neil의 Follow-Through Day(FTD) 신호를 탐지. Rally Attempt→FTD 확인→Post-FTD 건강도 상태 머신.
+---
+
 # kr-ftd-detector (한국 FTD 탐지기)
 
 ## 개요

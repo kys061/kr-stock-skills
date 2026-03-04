@@ -1,3 +1,8 @@
+---
+name: kr-bubble-detector
+description: 6개 지표(Put/Call, VKOSPI, 신용잔고, 시장폭, IPO, 투기지표)로 한국 시장 버블 위험도를 0-100 점수화하고 Risk Zone(Green/Yellow/Orange/Red) 판정. Minsky/Kindleberger 프레임워크 적용.
+---
+
 # kr-bubble-detector (한국 시장 버블 탐지기)
 
 ## 개요

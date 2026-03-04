@@ -1,3 +1,8 @@
+---
+name: kr-portfolio-manager
+description: 한국 세제(배당세 15.4%, ISA, 금종과세) 반영 포트폴리오 분석, 자산배분, 리스크 메트릭스, 리밸런싱 추천.
+---
+
 # kr-portfolio-manager
 
 > 한국 시장 포트폴리오 분석: 자산배분, 리스크 메트릭스, 리밸런싱 추천, 한국 세제 반영.

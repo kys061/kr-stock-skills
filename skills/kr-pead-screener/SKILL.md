@@ -1,3 +1,8 @@
+---
+name: kr-pead-screener
+description: 실적 발표 후 갭업 종목의 주봉 캔들 패턴(Red Candle Pullback→Breakout) 분석. Post-Earnings Announcement Drift 패턴 탐지.
+---
+
 # kr-pead-screener: 한국 실적 드리프트 스크리닝 (PEAD)
 
 > Post-Earnings Announcement Drift: 실적 발표 후 갭업 종목의 주봉 캔들 패턴 분석.

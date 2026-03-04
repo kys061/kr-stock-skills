@@ -1,3 +1,8 @@
+---
+name: kr-market-top-detector
+description: 7-컴포넌트(분배일/선도주/방어섹터/외국인이탈 등) 리스크 스코어링으로 시장 천장 확률 0-100 평가. KOSPI/KOSDAQ 이중 추적.
+---
+
 # kr-market-top-detector
 
 한국 시장 천장 탐지기 — 7-컴포넌트 리스크 스코어링.

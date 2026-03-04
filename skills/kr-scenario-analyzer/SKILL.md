@@ -1,3 +1,8 @@
+---
+name: kr-scenario-analyzer
+description: 뉴스/이벤트 기반 Base/Bull/Bear 3-시나리오 18개월 전개 분석. 1차/2차/3차 영향과 섹터별 추천 종목 도출.
+---
+
 # kr-scenario-analyzer
 
 > 한국 뉴스/이벤트로부터 18개월 시나리오를 분석하는 스킬.

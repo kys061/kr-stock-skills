@@ -1,3 +1,8 @@
+---
+name: kr-uptrend-analyzer
+description: 업종별 상승추세 종목 비율 분석으로 시장 건강도 진단. 5-컴포넌트(breadth/sector/rotation/momentum/history) 0-100 점수.
+---
+
 # kr-uptrend-analyzer
 
 ## 개요

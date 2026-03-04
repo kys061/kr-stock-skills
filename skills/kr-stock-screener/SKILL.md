@@ -1,3 +1,8 @@
+---
+name: kr-stock-screener
+description: KRClient 기반 PER/PBR/배당수익률/시가총액 등 다조건 필터 종목 스크리닝. KOSPI/KOSDAQ 전 종목 대상.
+---
+
 # kr-stock-screener: 한국 종합 주식 스크리닝 도구
 
 > KRClient 기반 다조건 필터 스크리닝 도구.

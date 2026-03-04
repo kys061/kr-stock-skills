@@ -1,3 +1,8 @@
+---
+name: kr-dividend-sop
+description: 5단계 SOP(스크리닝→진입→보유→수령→EXIT)로 배당주 투자 전 과정을 관리하는 표준 운영 절차 스킬.
+---
+
 # kr-dividend-sop: 한국 배당주 투자 표준 운용 절차
 
 > 5단계 SOP(Standard Operating Procedure)로 배당주 투자의 전 과정을 관리합니다.

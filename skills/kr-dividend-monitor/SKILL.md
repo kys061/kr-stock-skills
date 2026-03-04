@@ -1,3 +1,8 @@
+---
+name: kr-dividend-monitor
+description: DART 공시 기반 T1-T5 강제 리뷰 트리거(감배/정관변경/실적악화/지배구조/업황)로 배당 안전성 모니터링. OK/WARN/REVIEW 상태 판정.
+---
+
 # kr-dividend-monitor: 배당 안전성 모니터링
 
 > DART 공시 기반 5대 강제 리뷰 트리거(T1-T5)로 배당 안전성을 모니터링합니다.

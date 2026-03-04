@@ -1,3 +1,8 @@
+---
+name: kr-market-news-analyst
+description: 최근 10일 한국 시장 뉴스를 수집하고 각 이벤트의 시장 영향도를 1-10으로 평가하는 임팩트 스코어링 리포트.
+---
+
 # kr-market-news-analyst
 
 > 한국 시장 뉴스 분석 스킬 - 최근 10일간 시장 영향 뉴스의 임팩트 스코어링 및 분석 리포트

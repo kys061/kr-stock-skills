@@ -1,3 +1,8 @@
+---
+name: kr-institutional-flow
+description: PyKRX 기반 외국인/기관/개인 투자자별 매매동향 4-컴포넌트 추적. 일별 데이터로 수급 전환점 탐지.
+---
+
 # kr-institutional-flow
 
 한국 주식 시장의 투자자별 수급 동향을 추적하고 분석하는 스킬.

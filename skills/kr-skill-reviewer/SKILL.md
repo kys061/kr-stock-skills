@@ -1,3 +1,8 @@
+---
+name: kr-skill-reviewer
+description: Dual-Axis(Auto 50% + LLM 50%) 방식으로 스킬 품질 검증. 구조/스크립트/테스트/실행안전성 자동 체크 + LLM 딥리뷰.
+---
+
 # kr-skill-reviewer: 스킬 품질 리뷰
 
 > Dual-Axis (Auto 50% + LLM 50%) 방식으로 스킬의 품질을 평가합니다.

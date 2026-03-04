@@ -1,3 +1,8 @@
+---
+name: kr-edge-hint
+description: 한국 시장 관찰(수급/거래량/가격 이상)에서 구조화된 엣지 힌트를 추출하고 hints.yaml로 내보내기.
+---
+
 # kr-edge-hint
 
 > 한국 시장 관찰에서 구조화된 엣지 힌트를 추출하는 스킬.

@@ -1,3 +1,8 @@
+---
+name: kr-strategy-synthesizer
+description: 7개 업스트림 스킬(Market Breadth/Uptrend/Market Top/Macro/FTD/VCP/CANSLIM) 결과를 통합하여 0-100 확신도 점수 산출.
+---
+
 # kr-strategy-synthesizer: 전략 통합 합성기
 
 > 8개 업스트림 KR 스킬의 JSON 결과를 통합하여

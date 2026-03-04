@@ -1,3 +1,8 @@
+---
+name: kr-breadth-chart
+description: KOSPI200/KOSDAQ150 시장폭 차트 이미지를 분석하여 MA200 기반 참여도 변화 추세를 진단한다. kr-market-breadth/kr-uptrend-analyzer 출력 차트의 시각적 해석 스킬.
+---
+
 # kr-breadth-chart (한국 시장폭 차트 분석)
 
 ## 개요

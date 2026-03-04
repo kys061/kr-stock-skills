@@ -1,3 +1,8 @@
+---
+name: kr-canslim-screener
+description: William O'Neil의 CANSLIM 7-컴포넌트(C/A/N/S/L/I/M) 방법론을 한국 시장에 적용한 성장주 스크리닝. DART 재무+PyKRX 시세 기반 각 항목 0-100 스코어링 후 A/B/C/D 등급 부여.
+---
+
 # kr-canslim-screener: 한국 CANSLIM 성장주 스크리닝
 
 > William O'Neil의 CANSLIM 7-컴포넌트 방법론을 한국 시장에 적용.

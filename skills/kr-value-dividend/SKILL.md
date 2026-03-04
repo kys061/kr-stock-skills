@@ -1,3 +1,8 @@
+---
+name: kr-value-dividend
+description: 3-Phase(밸류 필터→배당 품질→종합 점수) 방식 저평가 고배당 종목 발굴. PER/PBR 필터 + 배당 성장성/안정성 스코어링.
+---
+
 # kr-value-dividend: 한국 배당 가치주 스크리닝
 
 > 3-Phase 펀더멘털 필터 + 4-컴포넌트 스코어링으로 배당 가치주를 발굴합니다.

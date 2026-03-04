@@ -1,3 +1,8 @@
+---
+name: kr-vcp-screener
+description: Mark Minervini Stage 2 트렌드 템플릿 + VCP(Volatility Contraction Pattern) 탐지. 변동성 수축 + 피봇 근접 종목 선별.
+---
+
 # kr-vcp-screener: 한국 VCP 패턴 스크리닝
 
 > Mark Minervini Stage 2 트렌드 템플릿 + Volatility Contraction Pattern.

@@ -1,3 +1,8 @@
+---
+name: kr-technical-analyst
+description: 한국 주식 주간/일간 차트 이미지 기반 기술적 분석. 추세, 지지/저항, 패턴 인식, 확률적 시나리오 도출.
+---
+
 # kr-technical-analyst
 
 > 한국 주식 기술적 분석 스킬 - 주간/일간 차트 이미지를 분석하여 확률적 시나리오 도출

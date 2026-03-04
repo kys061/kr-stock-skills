@@ -1,3 +1,8 @@
+---
+name: kr-edge-strategy
+description: 엣지 컨셉을 전략 드래프트 변환. 진입/청산/포지션사이징/리스크 규칙을 포함한 실행 가능한 전략 설계.
+---
+
 # kr-edge-strategy
 
 > 엣지 컨셉을 전략 드래프트로 변환하는 스킬.

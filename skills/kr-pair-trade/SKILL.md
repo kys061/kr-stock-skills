@@ -1,3 +1,8 @@
+---
+name: kr-pair-trade
+description: 두 종목 간 상관분석 + ADF 공적분 검정 + Z-Score 스프레드 기반 페어 트레이딩 기회 분석. 한국 섹터 내 페어 후보 제공.
+---
+
 # kr-pair-trade: 한국 페어 트레이딩 스크리닝
 
 > 상관분석 + ADF 공적분 테스트 + Z-Score 스프레드.

@@ -1,3 +1,8 @@
+---
+name: kr-weekly-strategy
+description: 4개 시장상태 + 14섹터 분석 + 8개 체크리스트로 주간 종합 전략 리포트 생성.
+---
+
 # kr-weekly-strategy: 주간 전략 워크플로우
 
 > 한국 시장 주간 전략을 6개 섹션으로 구성하여

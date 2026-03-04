@@ -1,3 +1,8 @@
+---
+name: kr-market-breadth
+description: KOSPI200/KOSDAQ150 종목의 MA200 돌파 비율 기반 시장폭 0-100 종합 점수. 6개 컴포넌트(Breadth/Sector/Rotation/Momentum 등) 분석.
+---
+
 # kr-market-breadth
 
 > 한국 시장폭 분석 스킬 - KOSPI200/KOSDAQ150 기반 0-100 종합 점수 산출

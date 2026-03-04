@@ -1,3 +1,8 @@
+---
+name: kr-edge-concept
+description: 엣지 힌트와 리서치 티켓을 8개 가설 유형 기반 재사용 가능한 엣지 컨셉으로 합성. thesis/invalidation/playbook 구조화.
+---
+
 # kr-edge-concept
 
 > 엣지 힌트와 리서치 티켓을 재사용 가능한 엣지 컨셉으로 합성하는 스킬.

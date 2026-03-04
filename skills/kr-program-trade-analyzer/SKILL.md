@@ -1,3 +1,8 @@
+---
+name: kr-program-trade-analyzer
+description: 차익/비차익 프로그램 매매 분석, KOSPI200 선물 베이시스 상태, 옵션/선물 만기일 효과 종합 평가. 100% 한국 고유 메커니즘.
+---
+
 # kr-program-trade-analyzer
 
 한국 주식 시장의 프로그램 매매(차익/비차익) 분석, 선물 베이시스, 만기일 효과 스킬.

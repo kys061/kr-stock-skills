@@ -1,3 +1,8 @@
+---
+name: kr-options-advisor
+description: KOSPI200 옵션 Black-Scholes 가격결정, 그릭스 계산, 18개 전략 시뮬레이션. 승수 250,000원, VKOSPI, BOK 금리 적용.
+---
+
 # kr-options-advisor
 
 > KOSPI200 옵션 기반 Black-Scholes 가격결정, 그릭스 계산, 18개 전략 시뮬레이션.
