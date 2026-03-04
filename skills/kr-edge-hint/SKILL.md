@@ -1,0 +1,65 @@
+# kr-edge-hint
+
+> 한국 시장 관찰에서 구조화된 엣지 힌트를 추출하는 스킬.
+
+## 개요
+
+일일 시장 관찰(수급 동향, 이상 탐지, 뉴스 반응)을 구조화된 엣지 힌트로 변환한다.
+엣지 파이프라인의 첫 번째 단계: **관찰 → 추상화 → 설계 → 파이프라인**.
+
+## 한국 특화 사항
+
+- **수급 데이터 힌트**: 외국인/기관/개인 일별 순매수 → 자동 힌트 생성
+- **프로그램 매매**: 프로그램 순매수 전환 → 방향성 힌트
+- **공매도 잔고**: 공매도 잔고 급증/급감 → 반전 힌트
+- **신용잔고**: 신용잔고 과열 → 조정 힌트
+
+## 입력
+
+| 소스 | 형식 | 설명 |
+|------|------|------|
+| market_summary.json | JSON | 일일 시장 요약 (KOSPI/KOSDAQ 종가, 수급 등) |
+| anomalies.json | JSON list | 이상 탐지 결과 리스트 |
+| news_reactions.json | JSON list | 뉴스 반응 데이터 |
+
+## 출력
+
+```yaml
+# hints.yaml
+hints:
+  - symbol: "005930"
+    direction: "bullish"
+    entry_family: "pivot_breakout"
+    hypothesis: "breakout"
+    source: "rule:foreign_flow"
+    confidence: 0.8
+    memo: "외국인 10일 연속 순매수, 기관 동반 매수"
+meta:
+  generated_at: "2026-03-03T09:00:00+09:00"
+  rule_hints: 5
+  total_hints: 5
+  regime: "RiskOn"
+```
+
+## 사용법
+
+```bash
+python build_hints.py \
+  --market-summary market_summary.json \
+  --anomalies anomalies.json \
+  --news-reactions news_reactions.json \
+  --output hints.yaml
+```
+
+## 핵심 상수
+
+| 상수 | 값 | 설명 |
+|------|------|------|
+| RISK_ON_OFF_THRESHOLD | 10 | risk_on - risk_off >= 10 → RiskOn |
+| SUPPORTED_ENTRY_FAMILIES | pivot_breakout, gap_up_continuation | 지원 진입 패밀리 |
+
+## 파이프라인 위치
+
+```
+[kr-edge-hint] → kr-edge-concept → kr-edge-strategy → kr-edge-candidate
+```

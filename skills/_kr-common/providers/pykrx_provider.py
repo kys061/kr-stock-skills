@@ -164,6 +164,14 @@ class PyKRXProvider:
             self._to_krx(date), market
         )
 
+    def get_shorting_trade_top50(self, date: str,
+                                  market: str = 'KOSPI') -> pd.DataFrame:
+        """공매도 거래량 상위 50."""
+        self._throttle()
+        return krx_stock.get_shorting_trading_value_by_date(
+            self._to_krx(date), self._to_krx(date), market
+        )
+
     # ─────────────────────────────────────────
     # 지수 (Index)
     # ─────────────────────────────────────────

@@ -2,6 +2,16 @@
 
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
+
+# .env 파일 자동 로드 (프로젝트 루트)
+try:
+    from dotenv import load_dotenv
+    _env_path = Path(__file__).resolve().parents[2] / '.env'
+    if _env_path.exists():
+        load_dotenv(_env_path)
+except ImportError:
+    pass  # python-dotenv 미설치 시 os.getenv() 폴백
 
 
 @dataclass

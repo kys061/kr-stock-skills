@@ -80,6 +80,19 @@ class KRClient:
     def _recent_day(self) -> str:
         return date_utils.get_recent_trading_day()
 
+    def _cached(self, key: str, func, ttl: str = 'eod'):
+        """캐시 래퍼. 캐시 비활성화 시 바로 실행."""
+        if self._cache is None:
+            return func()
+        result = self._cache.get(key)
+        if result is not None:
+            logger.debug(f"Cache hit: {key}")
+            return result
+        result = func()
+        if result is not None:
+            self._cache.set(key, result, ttl=ttl)
+        return result
+
     # ─────────────────────────────────────────
     # 시세 (Price)
     # ─────────────────────────────────────────
@@ -127,23 +140,26 @@ class KRClient:
         """OHLCV 시계열 데이터."""
         ticker = self._resolve(ticker)
         end = end or self._today()
+        cache_key = f"ohlcv_{ticker}_{start}_{end}_{freq}"
 
-        try:
-            df = self._pykrx.get_market_ohlcv_by_date(start, end, ticker, freq=freq)
-            if not df.empty:
-                return df
-        except Exception as e:
-            logger.warning(f"PyKRX OHLCV failed, trying FDR: {e}")
+        def _fetch():
+            try:
+                df = self._pykrx.get_market_ohlcv_by_date(start, end, ticker, freq=freq)
+                if not df.empty:
+                    return df
+            except Exception as e:
+                logger.warning(f"PyKRX OHLCV failed, trying FDR: {e}")
 
-        # FDR 폴백
-        try:
-            df = self._fdr.get_data(ticker, start, end)
-            if not df.empty:
-                return df
-        except Exception as e:
-            logger.warning(f"FDR OHLCV fallback also failed: {e}")
+            # FDR 폴백
+            try:
+                df = self._fdr.get_data(ticker, start, end)
+                if not df.empty:
+                    return df
+            except Exception as e:
+                logger.warning(f"FDR OHLCV fallback also failed: {e}")
+            return pd.DataFrame()
 
-        return pd.DataFrame()
+        return self._cached(cache_key, _fetch)
 
     def get_ohlcv_multi(self, tickers: list, start: str,
                         end: str = None) -> pd.DataFrame:
@@ -162,9 +178,13 @@ class KRClient:
         if not start:
             start = date_utils.get_n_days_ago(90)
         end = end or self._today()
+        cache_key = f"fund_{ticker}_{start}_{end}"
+
+        def _fetch():
+            return self._pykrx.get_market_fundamental_by_date(start, end, ticker)
 
         try:
-            return self._pykrx.get_market_fundamental_by_date(start, end, ticker)
+            return self._cached(cache_key, _fetch)
         except Exception as e:
             raise ProviderError(f"get_fundamentals failed: {e}") from e
 
@@ -245,11 +265,15 @@ class KRClient:
         """종목별 투자자 매매동향."""
         ticker = self._resolve(ticker)
         end = end or self._today()
+        cache_key = f"inv_{ticker}_{start}_{end}_{detail}"
 
-        try:
+        def _fetch():
             return self._pykrx.get_trading_value_by_date(
                 start, end, ticker, detail=detail
             )
+
+        try:
+            return self._cached(cache_key, _fetch)
         except Exception as e:
             raise ProviderError(f"get_investor_trading failed: {e}") from e
 
@@ -310,8 +334,15 @@ class KRClient:
 
     def get_short_top50(self, date: str,
                         by: str = 'balance') -> pd.DataFrame:
-        """공매도 상위 50 종목."""
+        """공매도 상위 50 종목.
+
+        Args:
+            date: 조회일 (YYYY-MM-DD)
+            by: 'balance' (잔고 기준) 또는 'trade' (거래량 기준)
+        """
         try:
+            if by == 'trade':
+                return self._pykrx.get_shorting_trade_top50(date)
             return self._pykrx.get_shorting_balance_top50(date)
         except Exception as e:
             raise ProviderError(f"get_short_top50 failed: {e}") from e
@@ -324,9 +355,13 @@ class KRClient:
                   end: str = None) -> pd.DataFrame:
         """지수 OHLCV."""
         end = end or self._today()
+        cache_key = f"index_{index_code}_{start}_{end}"
+
+        def _fetch():
+            return self._pykrx.get_index_ohlcv(start, end, index_code)
 
         try:
-            return self._pykrx.get_index_ohlcv(start, end, index_code)
+            return self._cached(cache_key, _fetch)
         except Exception as e:
             raise ProviderError(f"get_index failed: {e}") from e
 

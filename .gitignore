@@ -29,3 +29,7 @@ Thumbs.db
 
 # Reports output
 reports/
+
+# Data cache
+docs_cache/
+*.pkl

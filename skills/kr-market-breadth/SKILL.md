@@ -1,0 +1,60 @@
+# kr-market-breadth
+
+> 한국 시장폭 분석 스킬 - KOSPI200/KOSDAQ150 기반 0-100 종합 점수 산출
+
+## 개요
+
+KOSPI 200 / KOSDAQ 150 구성종목의 시장폭(breadth)을 정량화하여
+0-100 종합 점수를 산출한다. 시장 참여 폭이 넓은지(건강한 상승) 또는
+좁은지(위험한 상승)를 객관적으로 진단한다.
+
+- **API 불필요**: PyKRX 데이터로 자체 계산
+- **출력**: JSON + Markdown 리포트
+- **US 원본**: market-breadth-analyzer (TraderMonty CSV → PyKRX 자체 계산)
+
+## 실행 방법
+
+```bash
+# KOSPI 200 시장폭 분석
+python3 skills/kr-market-breadth/scripts/kr_breadth_analyzer.py --market KOSPI200
+
+# KOSDAQ 150 시장폭 분석
+python3 skills/kr-market-breadth/scripts/kr_breadth_analyzer.py --market KOSDAQ150
+
+# 둘 다 분석
+python3 skills/kr-market-breadth/scripts/kr_breadth_analyzer.py --market ALL
+```
+
+## 6-컴포넌트 스코어링
+
+| 컴포넌트 | 가중치 | 핵심 신호 |
+|----------|:------:|-----------|
+| Breadth Level & Trend | 25% | 8MA 레벨 + 200MA 추세 방향 + 8MA 방향 |
+| 8MA vs 200MA Crossover | 20% | MA 갭 방향과 크기 |
+| Peak/Trough Cycle | 20% | 시장폭 사이클 위치 |
+| Bearish Signal | 15% | 8MA < 40 AND 하락 추세 |
+| Historical Percentile | 10% | 전체 히스토리 내 백분위 |
+| 지수 Divergence | 10% | 20일+60일 KOSPI vs Breadth 괴리 |
+
+## Health Zone
+
+| 점수 | 등급 | 주식 비중 권고 |
+|:----:|------|:-------------:|
+| 80-100 | Strong (강세) | 90-100% |
+| 60-79 | Healthy (건강) | 75-90% |
+| 40-59 | Neutral (중립) | 60-75% |
+| 20-39 | Weakening (약화) | 40-60% |
+| 0-19 | Critical (위험) | 25-40% |
+
+## 데이터 소스
+
+US 원본이 TraderMonty의 사전 계산된 CSV를 다운로드하는 것과 달리,
+이 스킬은 **PyKRX 원시 데이터에서 직접 계산**한다:
+
+1. `KRClient.get_index_constituents('0028')` → KOSPI 200 구성종목
+2. `KRClient.get_ohlcv(ticker, start)` → 각 종목 OHLCV
+3. `ta_utils.sma(close, 200)` → 200일 이동평균 계산
+4. 종가 > 200SMA인 종목 비율 = Breadth Index
+
+## 레퍼런스
+- `references/breadth_methodology.md` - 상세 방법론

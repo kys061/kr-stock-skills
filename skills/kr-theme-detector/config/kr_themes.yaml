@@ -1,0 +1,171 @@
+# 한국 시장 테마 정의 (14개)
+# 각 테마는 대표종목(core/sub)과 관련 업종으로 구성
+
+themes:
+  ai_semiconductor:
+    name: "AI/반도체"
+    description: "AI 인프라 및 반도체 밸류체인"
+    industries:
+      - "반도체"
+      - "전자부품"
+      - "IT하드웨어"
+    representative_stocks:
+      - {ticker: "005930", name: "삼성전자", role: "core"}
+      - {ticker: "000660", name: "SK하이닉스", role: "core"}
+      - {ticker: "042700", name: "한미반도체", role: "sub"}
+      - {ticker: "403870", name: "HPSP", role: "sub"}
+    related_etfs:
+      - {ticker: "091160", name: "KODEX 반도체"}
+
+  secondary_battery:
+    name: "2차전지"
+    description: "배터리 소재-셀-모듈 밸류체인"
+    industries:
+      - "전기장비"
+      - "화학"
+    representative_stocks:
+      - {ticker: "373220", name: "LG에너지솔루션", role: "core"}
+      - {ticker: "006400", name: "삼성SDI", role: "core"}
+      - {ticker: "051910", name: "LG화학", role: "sub"}
+      - {ticker: "247540", name: "에코프로비엠", role: "sub"}
+    related_etfs:
+      - {ticker: "305720", name: "KODEX 2차전지산업"}
+
+  bio_pharma:
+    name: "바이오/제약"
+    description: "바이오시밀러, 신약개발, CDMO"
+    industries:
+      - "제약"
+      - "바이오"
+    representative_stocks:
+      - {ticker: "207940", name: "삼성바이오로직스", role: "core"}
+      - {ticker: "068270", name: "셀트리온", role: "core"}
+      - {ticker: "091990", name: "셀트리온헬스케어", role: "sub"}
+    related_etfs: []
+
+  auto_mobility:
+    name: "자동차/모빌리티"
+    description: "완성차, 자율주행, 전기차, 부품"
+    industries:
+      - "자동차"
+      - "자동차부품"
+    representative_stocks:
+      - {ticker: "005380", name: "현대차", role: "core"}
+      - {ticker: "000270", name: "기아", role: "core"}
+      - {ticker: "012330", name: "현대모비스", role: "sub"}
+    related_etfs: []
+
+  defense:
+    name: "방산"
+    description: "방위산업, 우주항공"
+    industries:
+      - "기계"
+      - "전기장비"
+    representative_stocks:
+      - {ticker: "012450", name: "한화에어로스페이스", role: "core"}
+      - {ticker: "047810", name: "한국항공우주", role: "core"}
+      - {ticker: "082740", name: "HSD엔진", role: "sub"}
+    related_etfs: []
+
+  k_content:
+    name: "K-컨텐츠"
+    description: "엔터테인먼트, 게임, 미디어"
+    industries:
+      - "미디어"
+      - "오락"
+    representative_stocks:
+      - {ticker: "352820", name: "하이브", role: "core"}
+      - {ticker: "041510", name: "SM엔터", role: "sub"}
+      - {ticker: "263750", name: "펄어비스", role: "sub"}
+    related_etfs: []
+
+  shipbuilding:
+    name: "조선/해운"
+    description: "조선, LNG, 해운"
+    industries:
+      - "조선"
+      - "해운"
+    representative_stocks:
+      - {ticker: "329180", name: "HD현대중공업", role: "core"}
+      - {ticker: "042660", name: "한화오션", role: "core"}
+      - {ticker: "011200", name: "HMM", role: "sub"}
+    related_etfs: []
+
+  financial_valueup:
+    name: "금융/밸류업"
+    description: "은행, 보험, 증권 (밸류업 프로그램 수혜)"
+    industries:
+      - "은행"
+      - "보험"
+      - "증권"
+    representative_stocks:
+      - {ticker: "105560", name: "KB금융", role: "core"}
+      - {ticker: "055550", name: "신한지주", role: "core"}
+      - {ticker: "316140", name: "우리금융지주", role: "sub"}
+    related_etfs: []
+
+  internet_platform:
+    name: "인터넷/플랫폼"
+    description: "포털, 이커머스, 핀테크"
+    industries:
+      - "인터넷"
+      - "소프트웨어"
+    representative_stocks:
+      - {ticker: "035420", name: "NAVER", role: "core"}
+      - {ticker: "035720", name: "카카오", role: "core"}
+    related_etfs: []
+
+  steel_materials:
+    name: "철강/소재"
+    description: "철강, 비철금속, 화학소재"
+    industries:
+      - "철강"
+      - "비철금속"
+      - "화학"
+    representative_stocks:
+      - {ticker: "005490", name: "POSCO홀딩스", role: "core"}
+    related_etfs: []
+
+  construction_infra:
+    name: "건설/인프라"
+    description: "건설, 시멘트, SOC"
+    industries:
+      - "건설"
+      - "건축자재"
+    representative_stocks:
+      - {ticker: "000720", name: "현대건설", role: "core"}
+    related_etfs: []
+
+  energy_refinery:
+    name: "에너지/정유"
+    description: "정유, 가스, 신재생에너지"
+    industries:
+      - "에너지"
+      - "유틸리티"
+    representative_stocks:
+      - {ticker: "096770", name: "SK이노베이션", role: "core"}
+      - {ticker: "010950", name: "S-Oil", role: "sub"}
+    related_etfs: []
+
+  telecom_utility:
+    name: "통신/유틸리티"
+    description: "통신서비스, 전력, 가스 (방어주)"
+    industries:
+      - "통신"
+      - "유틸리티"
+    representative_stocks:
+      - {ticker: "017670", name: "SK텔레콤", role: "core"}
+      - {ticker: "015760", name: "한국전력", role: "core"}
+    related_etfs: []
+
+  consumer_retail:
+    name: "소비재/유통"
+    description: "식품, 의류, 유통, 화장품"
+    industries:
+      - "유통"
+      - "식품"
+      - "화장품"
+    representative_stocks:
+      - {ticker: "051900", name: "LG생활건강", role: "core"}
+      - {ticker: "090430", name: "아모레퍼시픽", role: "core"}
+    related_etfs: []

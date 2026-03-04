@@ -1,0 +1,37 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "kr-stock-skills-marketplace",
+  "version": "1.0.0",
+  "description": "Korean Stock Trading Skills marketplace - 44 skills for KOSPI/KOSDAQ analysis",
+  "owner": {
+    "name": "kys061",
+    "url": "https://github.com/kys061"
+  },
+  "plugins": [
+    {
+      "name": "kr-stock-skills",
+      "description": "Korean Stock Trading Skills - 44 analysis skills for KOSPI/KOSDAQ with PyKRX, DART, FinanceDataReader. Covers market analysis, screening, timing, strategy, dividends, options, and more.",
+      "version": "1.0.0",
+      "author": {
+        "name": "kys061"
+      },
+      "repository": "https://github.com/kys061/kr-stock-skills",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/kys061/kr-stock-skills.git"
+      },
+      "category": "finance",
+      "keywords": [
+        "korean-stock",
+        "kospi",
+        "kosdaq",
+        "trading",
+        "analysis",
+        "screening",
+        "dividend",
+        "pykrx",
+        "dart"
+      ]
+    }
+  ]
+}

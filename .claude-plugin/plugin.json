@@ -1,0 +1,26 @@
+{
+  "name": "kr-stock-skills",
+  "version": "1.0.0",
+  "description": "Korean Stock Trading Skills - 44 skills for KOSPI/KOSDAQ market analysis, screening, strategy, and portfolio management",
+  "author": {
+    "name": "kys061",
+    "url": "https://github.com/kys061"
+  },
+  "repository": "https://github.com/kys061/kr-stock-skills",
+  "license": "MIT",
+  "keywords": [
+    "korean-stock",
+    "kospi",
+    "kosdaq",
+    "trading",
+    "analysis",
+    "screening",
+    "canslim",
+    "vcp",
+    "dividend",
+    "pykrx",
+    "dart",
+    "options",
+    "portfolio"
+  ]
+}

@@ -1,0 +1,66 @@
+# kr-canslim-screener: 한국 CANSLIM 성장주 스크리닝
+
+> William O'Neil의 CANSLIM 7-컴포넌트 방법론을 한국 시장에 적용.
+> C(분기실적) + A(연간성장) + N(신고가) + S(수급) + L(상대강도) + I(기관/외국인) + M(시장방향).
+> US canslim-screener의 한국 적용 버전.
+
+## 사용 시점
+
+- 성장 모멘텀이 강한 한국 종목을 발굴할 때
+- 펀더멘털(실적) + 기술적(차트) + 수급을 종합 평가할 때
+- CANSLIM 점수 기반 성장주 포트폴리오 구성
+
+## 방법론
+
+### 7-컴포넌트 가중치
+
+| # | 컴포넌트 | 약자 | 가중치 | 데이터 소스 |
+|---|---------|------|:------:|-----------|
+| 1 | Current Earnings | C | 15% | DART 분기보고서 |
+| 2 | Annual Growth | A | 20% | DART 사업보고서 |
+| 3 | New Highs | N | 15% | PyKRX OHLCV |
+| 4 | Supply/Demand | S | 15% | PyKRX OHLCV |
+| 5 | Leadership | L | 20% | PyKRX + KOSPI |
+| 6 | Institutional | I | 10% | 투자자별 매매동향 |
+| 7 | Market Direction | M | 5% | Phase 3 크로스레퍼런스 |
+
+### M = 0 CRITICAL GATE
+M 점수가 0이면 다른 컴포넌트 점수와 무관하게 **매수 금지**.
+
+### 등급 체계
+
+| 등급 | 점수 | 권고 |
+|------|:----:|------|
+| Exceptional+ | 90-100 | 즉시 매수 (15-20%) |
+| Exceptional | 80-89 | 강한 매수 (10-15%) |
+| Strong | 70-79 | 매수 (8-12%) |
+| Above Average | 60-69 | 관찰 리스트 |
+| Below Average | < 60 | 패스 |
+
+### 최소 기준선
+C≥60, A≥50, N≥40, S≥40, L≥70, I≥40, M≥40
+어느 하나라도 미달이면 등급 하락.
+
+## 한국 시장 적응
+
+- FMP → KRClient/DART (재무제표)
+- S&P 500 → KOSPI (RS 벤치마크)
+- VIX → VKOSPI
+- 기관 13F → 일별 12분류 수급 (외국인/기관/연기금)
+- 40주 → 350종목 (API 제한 없음)
+
+## 실행 방법
+
+```bash
+cd ~/stock/skills/kr-canslim-screener/scripts
+python kr_canslim_screener.py --market KOSPI200 --output-dir ./output
+```
+
+## 관련 스킬
+
+| 스킬 | 관계 |
+|------|------|
+| kr-vcp-screener | RS Rank 공유, 기술적 패턴 보완 |
+| kr-market-breadth | M 컴포넌트 크로스레퍼런스 |
+| kr-macro-regime | M 컴포넌트 레짐 확인 |
+| kr-market-top-detector | M 컴포넌트 천장 위험 |
