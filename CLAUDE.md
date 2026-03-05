@@ -23,12 +23,39 @@
 - 경로: `reports/{skill_name}_{종목코드}_{종목명}_{YYYYMMDD}.md`
 - 종목 없는 분석: `reports/{skill_name}_market_{YYYYMMDD}.md`
 
-### 4. 스킬 설치 동기화
+### 4. 스킬 설치 동기화 (Deploy)
 
-`skills/` 하위 파일 변경 시 `~/.claude/skills/`에도 반영한다:
+스킬 파일(SKILL.md, scripts/, references/, tests/) 변경 시 **반드시** 아래 절차를 수행한다:
+
+#### 4-1. 개별 스킬 동기화 (`~/.claude/skills/`)
 ```bash
+# 변경된 스킬만 동기화
 cp -r skills/{skill_name}/ ~/.claude/skills/{skill_name}/
+
+# 여러 스킬 변경 시
+for s in {skill_1} {skill_2} {skill_3}; do
+  cp -r skills/$s/ ~/.claude/skills/$s/
+done
 ```
+
+#### 4-2. 전체 재설치 (대규모 변경 시)
+```bash
+./install.sh
+```
+
+#### 4-3. 동기화 검증
+변경 후 `diff`로 소스와 설치본이 일치하는지 확인한다:
+```bash
+diff <(cat skills/{skill_name}/SKILL.md) <(cat ~/.claude/skills/{skill_name}/SKILL.md)
+```
+
+#### 4-4. install.sh 업데이트
+스킬 추가/삭제 시 `install.sh` 헤더의 스킬 수를 반드시 업데이트한다:
+```bash
+# install.sh 내 "N skills for KOSPI/KOSDAQ analysis" 숫자 변경
+```
+
+> **주의**: `~/.claude/skills/` 동기화를 빠뜨리면 Claude Code가 구버전 SKILL.md를 참조하여 잘못된 분석을 수행할 수 있다. 스크립트/상수 변경 시 SKILL.md도 함께 업데이트하고 동기화해야 한다.
 
 ### 5. US 통화정책 오버레이 (필수)
 
@@ -73,6 +100,6 @@ cd skills/{skill_name}/scripts && python -m pytest tests/ -v
 
 ## 현재 상태
 
-- 총 46개 스킬 (Phase 1-9 + 2 Patch)
-- 누적 1,970+ 테스트
-- Phase 3-9 + 2 Patch 연속 10회 97% Match Rate
+- 총 46개 스킬 (Phase 1-9 + 3 Patch)
+- 누적 2,009+ 테스트
+- Phase 3-9 + 3 Patch 연속 10회 97% Match Rate
