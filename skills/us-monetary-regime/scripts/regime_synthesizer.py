@@ -203,6 +203,7 @@ def synthesize_regime(fomc_tone='neutral', dot_plot='stable',
                       yield_curve_2y10y=0.0,
                       fed_bs_change_pct=0.0, m2_growth_yoy=0.0,
                       dxy_change_3m=0.0, rrp_change_pct=0.0,
+                      tga_change_1m_pct=None,
                       kr_rate=3.50, usdkrw_change_3m=0.0,
                       foreign_flow_5d=0, bok_direction='hold',
                       # --- New: Economic Fundamentals ---
@@ -252,6 +253,7 @@ def synthesize_regime(fomc_tone='neutral', dot_plot='stable',
         m2_growth_yoy=m2_growth_yoy,
         dxy_change_3m=dxy_change_3m,
         rrp_change_pct=rrp_change_pct,
+        tga_change_1m_pct=tga_change_1m_pct,
     )
 
     # Sub-module 4: 경제 펀더멘털 (NEW)
@@ -344,6 +346,7 @@ def synthesize_regime(fomc_tone='neutral', dot_plot='stable',
             'm2_growth_yoy': m2_growth_yoy,
             'dxy_change_3m': dxy_change_3m,
             'rrp_change_pct': rrp_change_pct,
+            'tga_change_1m_pct': tga_change_1m_pct,
             'kr_rate': kr_rate,
             'usdkrw_change_3m': usdkrw_change_3m,
             'foreign_flow_5d': foreign_flow_5d,

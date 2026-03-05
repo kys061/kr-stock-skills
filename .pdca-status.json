@@ -28,6 +28,29 @@
       }
     ]
   },
+  "보완작업": {
+    "phase": "do",
+    "matchRate": null,
+    "iterationCount": 0,
+    "startedAt": "2026-03-06T00:00:00Z",
+    "history": [
+      {
+        "action": "plan_created",
+        "timestamp": "2026-03-06T00:00:00Z",
+        "details": "YouTube 주식장인 비교 기반 3개 보완 항목 Plan 작성: (1) TGA 추적 in liquidity_tracker, (2) 고객 예탁금 in kr-credit-monitor, (3) PANIC_BUY 패턴 in kr-strategy-synthesizer"
+      },
+      {
+        "action": "design_created",
+        "timestamp": "2026-03-06T01:00:00Z",
+        "details": "상세 설계 완료. 5개 파일 변경: (1) liquidity_tracker TGA 5컴포넌트(0.25+0.20+0.20+0.15+0.20), (2) regime_synthesizer TGA 파라미터 전달, (3) credit_balance_analyzer 예탁금 독립분석(level+signal+buying_power), (4) pattern_classifier PANIC_BUY 5번째 패턴(easing+급락+VKOSPI), (5) conviction_scorer PANIC_BUY +15 보너스. ~35 테스트. 하위호환 100%."
+      },
+      {
+        "action": "do_completed",
+        "timestamp": "2026-03-06T02:00:00Z",
+        "details": "구현 완료. 5개 파일 수정 + 3개 테스트 파일 업데이트. us-monetary-regime 158 passed (143+15 TGA), kr-credit-monitor 57 passed (45+12 예탁금), kr-strategy-synthesizer 64 passed (52+12 PANIC_BUY). 총 신규 39 테스트. 기존 테스트 0 failures. SKILL.md 3개 업데이트. ~/.claude/skills/ 동기화 완료."
+      }
+    ]
+  },
   "kr-stock-skills": {
     "phase": "completed",
     "matchRate": 97,

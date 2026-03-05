@@ -10,6 +10,16 @@ LIQUIDITY_WEIGHTS = {
     'rrp': 0.15,
 }
 
+# --- 5-Component Weights (with TGA, sum = 1.00) ---
+
+LIQUIDITY_WEIGHTS_5 = {
+    'fed_bs': 0.25,
+    'm2': 0.20,
+    'dxy': 0.20,
+    'rrp': 0.15,
+    'tga': 0.20,
+}
+
 # --- Liquidity Levels ---
 
 LIQUIDITY_LEVELS = {
@@ -48,6 +58,30 @@ DXY_SCORING = {
     'mild_fall': 65,        # 3M -1% ~ -5%
     'strong_fall': 80,      # 3M < -5%
 }
+
+
+# --- TGA Scoring (inverse: TGA decrease = liquidity increase) ---
+
+TGA_SCORING = {
+    'large_drawdown': 80,   # 1M change < -10%
+    'drawdown': 65,         # 1M change -3% ~ -10%
+    'stable': 50,           # 1M change -3% ~ +3%
+    'buildup': 35,          # 1M change +3% ~ +10%
+    'large_buildup': 20,    # 1M change > +10%
+}
+
+
+def _score_tga(change_1m_pct):
+    """TGA 1개월 변화율 -> 점수 (역관계: 감소 = 유동성 확대)."""
+    if change_1m_pct < -10.0:
+        return TGA_SCORING['large_drawdown']
+    elif change_1m_pct < -3.0:
+        return TGA_SCORING['drawdown']
+    elif change_1m_pct <= 3.0:
+        return TGA_SCORING['stable']
+    elif change_1m_pct <= 10.0:
+        return TGA_SCORING['buildup']
+    return TGA_SCORING['large_buildup']
 
 
 def _score_fed_bs(change_pct):
@@ -124,7 +158,8 @@ def _get_trend(score):
 
 
 def track_liquidity(fed_bs_change_pct=0.0, m2_growth_yoy=0.0,
-                    dxy_change_3m=0.0, rrp_change_pct=0.0):
+                    dxy_change_3m=0.0, rrp_change_pct=0.0,
+                    tga_change_1m_pct=None):
     """글로벌 유동성 추적.
 
     Args:
@@ -132,6 +167,8 @@ def track_liquidity(fed_bs_change_pct=0.0, m2_growth_yoy=0.0,
         m2_growth_yoy: float, M2 YoY 증가율 (%).
         dxy_change_3m: float, DXY 3개월 변화율 (%).
         rrp_change_pct: float, RRP 잔고 MoM 변화율 (%).
+        tga_change_1m_pct: float or None, TGA 1개월 변화율 (%).
+            None이면 기존 4-컴포넌트, 제공 시 5-컴포넌트.
 
     Returns:
         dict: {liquidity_score, liquidity_level, liquidity_trend, components}
@@ -141,38 +178,61 @@ def track_liquidity(fed_bs_change_pct=0.0, m2_growth_yoy=0.0,
     dxy_score = _score_dxy(dxy_change_3m)
     rrp_score = _score_rrp(rrp_change_pct)
 
-    weighted = (
-        bs_score * LIQUIDITY_WEIGHTS['fed_bs'] +
-        m2_score * LIQUIDITY_WEIGHTS['m2'] +
-        dxy_score * LIQUIDITY_WEIGHTS['dxy'] +
-        rrp_score * LIQUIDITY_WEIGHTS['rrp']
-    )
+    use_tga = tga_change_1m_pct is not None
+    if use_tga:
+        tga_score = _score_tga(tga_change_1m_pct)
+        weights = LIQUIDITY_WEIGHTS_5
+        weighted = (
+            bs_score * weights['fed_bs'] +
+            m2_score * weights['m2'] +
+            dxy_score * weights['dxy'] +
+            rrp_score * weights['rrp'] +
+            tga_score * weights['tga']
+        )
+    else:
+        weights = LIQUIDITY_WEIGHTS
+        weighted = (
+            bs_score * weights['fed_bs'] +
+            m2_score * weights['m2'] +
+            dxy_score * weights['dxy'] +
+            rrp_score * weights['rrp']
+        )
+
     liquidity_score = round(max(0, min(100, weighted)), 1)
+
+    components = {
+        'fed_bs': {
+            'raw': fed_bs_change_pct,
+            'score': bs_score,
+            'weight': weights['fed_bs'],
+        },
+        'm2': {
+            'raw': m2_growth_yoy,
+            'score': m2_score,
+            'weight': weights['m2'],
+        },
+        'dxy': {
+            'raw': dxy_change_3m,
+            'score': dxy_score,
+            'weight': weights['dxy'],
+        },
+        'rrp': {
+            'raw': rrp_change_pct,
+            'score': rrp_score,
+            'weight': weights['rrp'],
+        },
+    }
+
+    if use_tga:
+        components['tga'] = {
+            'raw': tga_change_1m_pct,
+            'score': tga_score,
+            'weight': weights['tga'],
+        }
 
     return {
         'liquidity_score': liquidity_score,
         'liquidity_level': _classify_level(liquidity_score),
         'liquidity_trend': _get_trend(liquidity_score),
-        'components': {
-            'fed_bs': {
-                'raw': fed_bs_change_pct,
-                'score': bs_score,
-                'weight': LIQUIDITY_WEIGHTS['fed_bs'],
-            },
-            'm2': {
-                'raw': m2_growth_yoy,
-                'score': m2_score,
-                'weight': LIQUIDITY_WEIGHTS['m2'],
-            },
-            'dxy': {
-                'raw': dxy_change_3m,
-                'score': dxy_score,
-                'weight': LIQUIDITY_WEIGHTS['dxy'],
-            },
-            'rrp': {
-                'raw': rrp_change_pct,
-                'score': rrp_score,
-                'weight': LIQUIDITY_WEIGHTS['rrp'],
-            },
-        },
+        'components': components,
     }

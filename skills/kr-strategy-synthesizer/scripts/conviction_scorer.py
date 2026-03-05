@@ -294,11 +294,15 @@ def _get_zone(score):
     return 'PRESERVATION'
 
 
-def calc_conviction_score(components):
+PANIC_BUY_BONUS = 15  # PANIC_BUY 패턴 감지 시 확신도 보너스
+
+
+def calc_conviction_score(components, pattern=None):
     """확신도 종합 점수 계산.
 
     Args:
         components: dict from calc_component_scores().
+        pattern: str or None, 감지된 시장 패턴명 (e.g. 'PANIC_BUY').
 
     Returns:
         dict: {score, zone, components, zone_details}
@@ -316,6 +320,10 @@ def calc_conviction_score(components):
         score = round(weighted_sum / total_weight, 1)
     else:
         score = 50.0
+
+    # PANIC_BUY 보너스
+    if pattern == 'PANIC_BUY':
+        score = min(100, score + PANIC_BUY_BONUS)
 
     zone = _get_zone(score)
     zone_details = CONVICTION_ZONES[zone]

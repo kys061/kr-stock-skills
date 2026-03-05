@@ -7,11 +7,16 @@ from ..credit_balance_analyzer import (
     CREDIT_MARKET_RATIO_LEVELS,
     LEVERAGE_CYCLE_PHASES,
     DEPOSIT_CREDIT_RATIO,
+    DEPOSIT_LEVEL_THRESHOLDS,
+    DEPOSIT_CHANGE_SIGNALS,
+    DEPOSIT_LEVEL_SCORES,
+    DEPOSIT_SIGNAL_SCORES,
     _classify_market_ratio,
     calc_credit_percentile,
     classify_leverage_cycle,
     calc_deposit_credit_ratio,
     analyze_credit_balance,
+    analyze_investor_deposits,
 )
 from ..forced_liquidation_risk import (
     MARGIN_CALL_CONFIG,
@@ -379,3 +384,59 @@ class TestGenerateReport:
         report = generate_credit_report(balance, risk_score=risk)
         assert '리스크 등급' in report
         assert 'NORMAL' in report
+
+
+# ═══════════════════════════════════════════════
+# 고객 예탁금 분석 (신규)
+# ═══════════════════════════════════════════════
+
+class TestInvestorDeposits:
+
+    def test_deposit_level_very_high(self):
+        r = analyze_investor_deposits(65.0)
+        assert r['level'] == 'very_high'
+
+    def test_deposit_level_high(self):
+        r = analyze_investor_deposits(52.0)
+        assert r['level'] == 'high'
+
+    def test_deposit_level_normal(self):
+        r = analyze_investor_deposits(42.0)
+        assert r['level'] == 'normal'
+
+    def test_deposit_level_low(self):
+        r = analyze_investor_deposits(32.0)
+        assert r['level'] == 'low'
+
+    def test_deposit_level_very_low(self):
+        r = analyze_investor_deposits(25.0)
+        assert r['level'] == 'very_low'
+
+    def test_deposit_signal_surge(self):
+        r = analyze_investor_deposits(50.0, deposit_change_1m_pct=12.0)
+        assert r['signal'] == 'surge'
+
+    def test_deposit_signal_stable(self):
+        r = analyze_investor_deposits(50.0, deposit_change_1m_pct=1.0)
+        assert r['signal'] == 'stable'
+
+    def test_deposit_signal_exodus(self):
+        r = analyze_investor_deposits(50.0, deposit_change_1m_pct=-15.0)
+        assert r['signal'] == 'exodus'
+
+    def test_buying_power_score_range(self):
+        r = analyze_investor_deposits(50.0, deposit_change_1m_pct=0.0)
+        assert 0 <= r['buying_power_score'] <= 100
+
+    def test_buying_power_high_balance_surge(self):
+        r = analyze_investor_deposits(65.0, deposit_change_1m_pct=12.0)
+        assert r['buying_power_score'] >= 80
+
+    def test_buying_power_low_balance_exodus(self):
+        r = analyze_investor_deposits(25.0, deposit_change_1m_pct=-15.0)
+        assert r['buying_power_score'] <= 20
+
+    def test_deposit_interpretation_korean(self):
+        r = analyze_investor_deposits(50.0)
+        assert isinstance(r['interpretation'], str)
+        assert len(r['interpretation']) > 0

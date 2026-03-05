@@ -4,6 +4,12 @@
 # ─── 시장 패턴 분류 ───
 
 MARKET_PATTERNS = {
+    'PANIC_BUY': {
+        'name': '공포 매수 기회',
+        'trigger': 'easing_regime + sharp_decline + no_forced_liquidation',
+        'principle': '금리 인하기의 급락은 최고의 매수 기회',
+        'equity_range': (80, 100),
+    },
     'POLICY_PIVOT': {
         'name': '정책 전환 예측',
         'trigger': 'transitional_regime + high_transition_prob',
@@ -29,6 +35,46 @@ MARKET_PATTERNS = {
         'equity_range': (0, 20),
     },
 }
+
+# --- PANIC_BUY Trigger Thresholds ---
+
+PANIC_BUY_TRIGGERS = {
+    'us_regime_min_score': 65,       # US regime score >= 65 (easing)
+    'market_decline_pct': -10.0,     # KOSPI 20일 수익률 <= -10%
+    'vkospi_min': 25.0,              # VKOSPI >= 25 (공포 확인)
+}
+
+
+def _check_panic_buy(components, reports):
+    """공포 매수 기회 패턴 감지.
+
+    3조건 동시 충족:
+    1. US regime score >= 65 (easing)
+    2. KOSPI 20일 수익률 <= -10%
+    3. VKOSPI >= 25
+    """
+    monetary = reports.get('us-monetary-regime', {})
+    breadth = reports.get('kr-market-breadth', {})
+    bubble = reports.get('kr-bubble-detector', {})
+
+    us_score = float(monetary.get('regime_score', 0))
+    kospi_20d = float(breadth.get('kospi_20d_return', 0))
+    vkospi = float(bubble.get('vkospi', 0))
+
+    triggers = PANIC_BUY_TRIGGERS
+    if (us_score >= triggers['us_regime_min_score']
+            and kospi_20d <= triggers['market_decline_pct']
+            and vkospi >= triggers['vkospi_min']):
+        confidence = 70.0
+        if us_score >= 80:
+            confidence += 10
+        if kospi_20d <= -15:
+            confidence += 10
+        if vkospi >= 30:
+            confidence += 10
+        return True, min(100, confidence)
+
+    return False, 0
 
 
 def _check_policy_pivot(components, reports):
@@ -82,7 +128,18 @@ def classify_pattern(components, reports):
     Returns:
         dict: {pattern, name, confidence, principle, equity_range}
     """
-    # 우선순위: POLICY_PIVOT > UNSUSTAINABLE_DISTORTION > EXTREME_CONTRARIAN > WAIT_OBSERVE
+    # 우선순위: PANIC_BUY > POLICY_PIVOT > UNSUSTAINABLE_DISTORTION > EXTREME_CONTRARIAN > WAIT_OBSERVE
+
+    detected, confidence = _check_panic_buy(components, reports)
+    if detected:
+        p = MARKET_PATTERNS['PANIC_BUY']
+        return {
+            'pattern': 'PANIC_BUY',
+            'name': p['name'],
+            'confidence': confidence,
+            'principle': p['principle'],
+            'equity_range': p['equity_range'],
+        }
 
     detected, confidence = _check_policy_pivot(components, reports)
     if detected:

@@ -13,10 +13,12 @@ from report_loader import (
 )
 from conviction_scorer import (
     CONVICTION_COMPONENTS, CONVICTION_ZONES, KR_ADAPTATION,
+    PANIC_BUY_BONUS,
     normalize_signal, calc_component_scores, calc_conviction_score,
 )
 from pattern_classifier import (
-    MARKET_PATTERNS, classify_pattern,
+    MARKET_PATTERNS, PANIC_BUY_TRIGGERS,
+    classify_pattern, _check_panic_buy,
 )
 from allocation_engine import (
     generate_allocation, apply_kr_adjustment,
@@ -62,10 +64,10 @@ class TestConstants:
         assert CONVICTION_ZONES['LOW']['min_score'] == 20
         assert CONVICTION_ZONES['PRESERVATION']['min_score'] == 0
 
-    def test_market_patterns_4(self):
-        assert len(MARKET_PATTERNS) == 4
+    def test_market_patterns_5(self):
+        assert len(MARKET_PATTERNS) == 5
         assert set(MARKET_PATTERNS.keys()) == {
-            'POLICY_PIVOT', 'UNSUSTAINABLE_DISTORTION',
+            'PANIC_BUY', 'POLICY_PIVOT', 'UNSUSTAINABLE_DISTORTION',
             'EXTREME_CONTRARIAN', 'WAIT_OBSERVE',
         }
 
@@ -440,6 +442,104 @@ class TestReportGenerator:
         assert '72.5' in report
         assert 'POLICY_PIVOT' in report
         assert '80.0' in report
+
+
+# ═══════════════════════════════════════════════
+# PANIC_BUY 패턴 테스트 (신규)
+# ═══════════════════════════════════════════════
+
+class TestPanicBuy:
+
+    def test_panic_buy_pattern_in_dict(self):
+        assert 'PANIC_BUY' in MARKET_PATTERNS
+
+    def test_panic_buy_equity_range(self):
+        assert MARKET_PATTERNS['PANIC_BUY']['equity_range'] == (80, 100)
+
+    def test_panic_buy_triggers_constants(self):
+        assert PANIC_BUY_TRIGGERS['us_regime_min_score'] == 65
+        assert PANIC_BUY_TRIGGERS['market_decline_pct'] == -10.0
+        assert PANIC_BUY_TRIGGERS['vkospi_min'] == 25.0
+
+    def test_panic_buy_all_conditions_met(self):
+        reports = {
+            'us-monetary-regime': {'regime_score': 70},
+            'kr-market-breadth': {'kospi_20d_return': -12},
+            'kr-bubble-detector': {'vkospi': 28},
+        }
+        detected, confidence = _check_panic_buy({}, reports)
+        assert detected is True
+        assert confidence >= 70
+
+    def test_panic_buy_no_easing(self):
+        reports = {
+            'us-monetary-regime': {'regime_score': 50},
+            'kr-market-breadth': {'kospi_20d_return': -12},
+            'kr-bubble-detector': {'vkospi': 28},
+        }
+        detected, _ = _check_panic_buy({}, reports)
+        assert detected is False
+
+    def test_panic_buy_no_decline(self):
+        reports = {
+            'us-monetary-regime': {'regime_score': 70},
+            'kr-market-breadth': {'kospi_20d_return': -5},
+            'kr-bubble-detector': {'vkospi': 28},
+        }
+        detected, _ = _check_panic_buy({}, reports)
+        assert detected is False
+
+    def test_panic_buy_no_vkospi(self):
+        reports = {
+            'us-monetary-regime': {'regime_score': 70},
+            'kr-market-breadth': {'kospi_20d_return': -12},
+            'kr-bubble-detector': {'vkospi': 20},
+        }
+        detected, _ = _check_panic_buy({}, reports)
+        assert detected is False
+
+    def test_panic_buy_highest_priority(self):
+        """PANIC_BUY가 POLICY_PIVOT보다 우선."""
+        reports = {
+            'us-monetary-regime': {'regime_score': 70},
+            'kr-market-breadth': {'kospi_20d_return': -12},
+            'kr-bubble-detector': {'vkospi': 28},
+            'kr-macro-regime': {'regime': 'transitional', 'transition_probability': 0.8},
+        }
+        result = classify_pattern({}, reports)
+        assert result['pattern'] == 'PANIC_BUY'
+
+    def test_panic_buy_confidence_base(self):
+        reports = {
+            'us-monetary-regime': {'regime_score': 65},
+            'kr-market-breadth': {'kospi_20d_return': -10},
+            'kr-bubble-detector': {'vkospi': 25},
+        }
+        detected, confidence = _check_panic_buy({}, reports)
+        assert detected is True
+        assert confidence == 70.0
+
+    def test_panic_buy_confidence_bonus(self):
+        reports = {
+            'us-monetary-regime': {'regime_score': 85},
+            'kr-market-breadth': {'kospi_20d_return': -18},
+            'kr-bubble-detector': {'vkospi': 32},
+        }
+        detected, confidence = _check_panic_buy({}, reports)
+        assert detected is True
+        assert confidence == 100  # 70 + 10 + 10 + 10 = 100
+
+    def test_conviction_panic_buy_bonus(self):
+        components = calc_component_scores({})
+        r1 = calc_conviction_score(components)
+        r2 = calc_conviction_score(components, pattern='PANIC_BUY')
+        assert r2['score'] == min(100, r1['score'] + PANIC_BUY_BONUS)
+
+    def test_conviction_no_bonus_without_pattern(self):
+        components = calc_component_scores({})
+        r1 = calc_conviction_score(components)
+        r2 = calc_conviction_score(components, pattern=None)
+        assert r1['score'] == r2['score']
 
 
 if __name__ == '__main__':

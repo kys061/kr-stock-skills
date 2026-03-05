@@ -38,14 +38,18 @@ description: 7개 업스트림 스킬(Market Breadth/Uptrend/Market Top/Macro/FT
 | LOW | 20-39 | 20-50% | 5% |
 | PRESERVATION | 0-19 | 0-20% | 3% |
 
-## 4 시장 패턴
+## 5 시장 패턴
 
-| 패턴 | 트리거 |
-|------|--------|
-| POLICY_PIVOT | 정책 전환 + 높은 전환 확률 |
-| UNSUSTAINABLE_DISTORTION | 고위험 + 수축/인플레이션 |
-| EXTREME_CONTRARIAN | FTD 확인 + 약세 → 역발상 매수 |
-| WAIT_OBSERVE | 낮은 확신 + 혼합 시그널 |
+| 패턴 | 트리거 | 주식 비중 |
+|------|--------|:--------:|
+| **PANIC_BUY** | US easing(>=65) + KOSPI 급락(<=-10%) + VKOSPI(>=25) | 80-100% |
+| POLICY_PIVOT | 정책 전환 + 높은 전환 확률 | 70-90% |
+| UNSUSTAINABLE_DISTORTION | 고위험 + 수축/인플레이션 | 30-50% |
+| EXTREME_CONTRARIAN | FTD 확인 + 약세 → 역발상 매수 | 25-40% |
+| WAIT_OBSERVE | 낮은 확신 + 혼합 시그널 | 0-20% |
+
+**PANIC_BUY**: "금리 인하기의 급락은 최고의 매수 기회". 3조건 동시 충족 시 확신도 +15 보너스.
+우선순위: PANIC_BUY > POLICY_PIVOT > UNSUSTAINABLE > EXTREME_CONTRARIAN > WAIT.
 
 ## 실행 방법
 

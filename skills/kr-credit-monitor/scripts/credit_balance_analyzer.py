@@ -45,6 +45,40 @@ LEVERAGE_CYCLE_PHASES = {
     },
 }
 
+# --- 고객 예탁금(투자자예수금) 수준 ---
+
+DEPOSIT_LEVEL_THRESHOLDS = {
+    'very_high': 60.0,    # 60조원+: 대기 자금 풍부
+    'high': 50.0,         # 50조원+
+    'normal': 40.0,       # 40조원+
+    'low': 30.0,          # 30조원+
+    'very_low': 0.0,      # 30조원 미만: 자금 이탈
+}
+
+DEPOSIT_CHANGE_SIGNALS = {
+    'surge': 0.10,        # MoM +10%+: 대기 자금 급증
+    'increase': 0.03,     # MoM +3%~+10%
+    'stable_upper': -0.03,  # MoM -3%~+3%
+    'decrease': -0.10,    # MoM -3%~-10%
+    'exodus': -0.10,      # MoM < -10%: 자금 이탈
+}
+
+DEPOSIT_LEVEL_SCORES = {
+    'very_high': 90,
+    'high': 70,
+    'normal': 50,
+    'low': 30,
+    'very_low': 10,
+}
+
+DEPOSIT_SIGNAL_SCORES = {
+    'surge': 90,
+    'increase': 70,
+    'stable': 50,
+    'decrease': 30,
+    'exodus': 10,
+}
+
 # 예탁금 대비 신용잔고 비율
 DEPOSIT_CREDIT_RATIO = {
     'overheated': 0.80,   # 80% 이상: 과열
@@ -247,4 +281,79 @@ def analyze_credit_balance(credit_data, market_cap):
         'growth': growth,
         'percentile': percentile,
         'cycle_phase': cycle_phase,
+    }
+
+
+def _classify_deposit_level(balance_t):
+    """예탁금 잔고(조원) -> 수준 분류."""
+    if balance_t >= DEPOSIT_LEVEL_THRESHOLDS['very_high']:
+        return 'very_high'
+    elif balance_t >= DEPOSIT_LEVEL_THRESHOLDS['high']:
+        return 'high'
+    elif balance_t >= DEPOSIT_LEVEL_THRESHOLDS['normal']:
+        return 'normal'
+    elif balance_t >= DEPOSIT_LEVEL_THRESHOLDS['low']:
+        return 'low'
+    return 'very_low'
+
+
+def _classify_deposit_signal(change_1m_pct):
+    """예탁금 1개월 변화율(%) -> 시그널 분류."""
+    change_ratio = change_1m_pct / 100.0
+    if change_ratio >= DEPOSIT_CHANGE_SIGNALS['surge']:
+        return 'surge'
+    elif change_ratio >= DEPOSIT_CHANGE_SIGNALS['increase']:
+        return 'increase'
+    elif change_ratio >= DEPOSIT_CHANGE_SIGNALS['stable_upper']:
+        return 'stable'
+    elif change_ratio >= DEPOSIT_CHANGE_SIGNALS['decrease']:
+        return 'decrease'
+    return 'exodus'
+
+
+def _deposit_interpretation(level, signal):
+    """예탁금 해석 문장 생성."""
+    level_labels = {
+        'very_high': '대기 자금 매우 풍부',
+        'high': '대기 자금 양호',
+        'normal': '대기 자금 보통',
+        'low': '대기 자금 부족',
+        'very_low': '대기 자금 극히 부족',
+    }
+    signal_labels = {
+        'surge': '급증 중 (매수 대기 자금 급격 유입)',
+        'increase': '증가 중',
+        'stable': '안정적',
+        'decrease': '감소 중',
+        'exodus': '급감 중 (자금 이탈 경고)',
+    }
+    return f"{level_labels.get(level, level)}, {signal_labels.get(signal, signal)}"
+
+
+def analyze_investor_deposits(deposit_balance_t, deposit_change_1m_pct=0.0):
+    """고객 예탁금(투자자예수금) 독립 분석.
+
+    Args:
+        deposit_balance_t: float, 현재 예탁금 (조원).
+        deposit_change_1m_pct: float, 1개월 변화율 (%, e.g. 5.0 = +5%).
+
+    Returns:
+        dict: {balance_t, level, change_pct, signal, interpretation,
+               buying_power_score}
+    """
+    level = _classify_deposit_level(deposit_balance_t)
+    signal = _classify_deposit_signal(deposit_change_1m_pct)
+
+    level_score = DEPOSIT_LEVEL_SCORES.get(level, 50)
+    signal_score = DEPOSIT_SIGNAL_SCORES.get(signal, 50)
+    buying_power_score = round(level_score * 0.5 + signal_score * 0.5, 1)
+    buying_power_score = max(0, min(100, buying_power_score))
+
+    return {
+        'balance_t': deposit_balance_t,
+        'level': level,
+        'change_pct': deposit_change_1m_pct,
+        'signal': signal,
+        'interpretation': _deposit_interpretation(level, signal),
+        'buying_power_score': buying_power_score,
     }

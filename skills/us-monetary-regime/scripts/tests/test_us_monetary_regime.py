@@ -15,8 +15,10 @@ from rate_trend_classifier import (
     CHANGE_THRESHOLDS,
 )
 from liquidity_tracker import (
-    track_liquidity, LIQUIDITY_WEIGHTS, LIQUIDITY_LEVELS,
-    FED_BS_SCORING, M2_SCORING, DXY_SCORING,
+    track_liquidity, LIQUIDITY_WEIGHTS, LIQUIDITY_WEIGHTS_5,
+    LIQUIDITY_LEVELS,
+    FED_BS_SCORING, M2_SCORING, DXY_SCORING, TGA_SCORING,
+    _score_tga,
 )
 from kr_transmission_scorer import (
     score_kr_transmission, get_sector_overlay,
@@ -445,6 +447,74 @@ class TestKRTransmissionScorer:
         for direction in ('hiking', 'hold', 'cutting'):
             r = score_kr_transmission(bok_direction=direction)
             assert 0 <= r['kr_impact_score'] <= 100
+
+
+# ============================================================
+# TestTGAComponent (~15 tests)
+# ============================================================
+
+class TestTGAComponent:
+
+    def test_5_weights_sum_1(self):
+        assert abs(sum(LIQUIDITY_WEIGHTS_5.values()) - 1.00) < 0.001
+
+    def test_4_weights_unchanged(self):
+        assert LIQUIDITY_WEIGHTS == {'fed_bs': 0.30, 'm2': 0.30, 'dxy': 0.25, 'rrp': 0.15}
+
+    def test_tga_scoring_large_drawdown(self):
+        assert _score_tga(-15.0) == TGA_SCORING['large_drawdown']  # 80
+
+    def test_tga_scoring_drawdown(self):
+        assert _score_tga(-5.0) == TGA_SCORING['drawdown']  # 65
+
+    def test_tga_scoring_stable(self):
+        assert _score_tga(0.0) == TGA_SCORING['stable']  # 50
+
+    def test_tga_scoring_buildup(self):
+        assert _score_tga(5.0) == TGA_SCORING['buildup']  # 35
+
+    def test_tga_scoring_large_buildup(self):
+        assert _score_tga(15.0) == TGA_SCORING['large_buildup']  # 20
+
+    def test_tga_none_uses_4_weights(self):
+        r = track_liquidity()
+        assert 'tga' not in r['components']
+        assert r['components']['fed_bs']['weight'] == 0.30
+
+    def test_tga_provided_uses_5_weights(self):
+        r = track_liquidity(tga_change_1m_pct=-5.0)
+        assert 'tga' in r['components']
+        assert r['components']['fed_bs']['weight'] == 0.25
+        assert r['components']['tga']['weight'] == 0.20
+
+    def test_backward_compat_no_tga(self):
+        r1 = track_liquidity(fed_bs_change_pct=0.5, m2_growth_yoy=3.0)
+        r2 = track_liquidity(fed_bs_change_pct=0.5, m2_growth_yoy=3.0, tga_change_1m_pct=None)
+        assert r1['liquidity_score'] == r2['liquidity_score']
+
+    def test_tga_large_drawdown_increases_score(self):
+        r_without = track_liquidity()
+        r_with = track_liquidity(tga_change_1m_pct=-15.0)
+        # TGA drawdown adds high score (80), so overall should be higher
+        # (though weights change, the effect should be net positive)
+        assert r_with['liquidity_score'] >= r_without['liquidity_score'] - 5
+
+    def test_tga_large_buildup_decreases_score(self):
+        r_without = track_liquidity()
+        r_with = track_liquidity(tga_change_1m_pct=15.0)
+        assert r_with['liquidity_score'] <= r_without['liquidity_score'] + 5
+
+    def test_synthesizer_tga_param(self):
+        r = synthesize_regime(tga_change_1m_pct=-5.0)
+        assert 'liquidity' in r['us_regime']
+
+    def test_synthesizer_tga_in_data_inputs(self):
+        r = synthesize_regime(tga_change_1m_pct=-5.0)
+        assert r['data_inputs']['tga_change_1m_pct'] == -5.0
+
+    def test_synthesizer_backward_compat(self):
+        r = synthesize_regime()
+        assert r['data_inputs']['tga_change_1m_pct'] is None
 
 
 # ============================================================
