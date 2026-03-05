@@ -61,9 +61,10 @@ python kr_institutional_flow_tracker.py --ticker 005930 --period 20
 ## Output Rule (마크다운 리포트 저장)
 
 - 분석 완료 후 결과를 **마크다운 파일로 저장**한다
-- 저장 경로: `reports/{skill_name}_{identifier}_{YYYYMMDD}.md`
-  - `{identifier}`: 종목코드, 섹터명, 또는 분석 대상 (없으면 `market`)
-  - 예: `reports/kr-stock-analysis_005930_20260305.md`
+- 저장 경로: `reports/{skill_name}_{identifier}_{name}_{YYYYMMDD}.md`
+  - `{identifier}`: 종목코드 (없으면 `market`)
+  - `{name}`: 종목명 또는 분석 대상명 (한글 가능)
+  - 예: `reports/kr-stock-analysis_005930_삼성전자_20260305.md`
 - 파일 구조:
   ```markdown
   # {스킬명} 분석 리포트
