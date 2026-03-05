@@ -23,6 +23,11 @@ from kr_transmission_scorer import (
     TRANSMISSION_WEIGHTS, SECTOR_SENSITIVITY, DEFAULT_SENSITIVITY,
     RATE_DIFF_SCORING, FX_SCORING, OVERLAY_MAX, OVERLAY_MIN,
 )
+from economic_fundamentals_analyzer import (
+    analyze_fundamentals, FUNDAMENTALS_WEIGHTS,
+    INFLATION_TARGET, PRESSURE_LABELS,
+    _score_inflation, _score_labor, _score_growth, _score_shock,
+)
 from regime_synthesizer import (
     synthesize_regime, REGIME_WEIGHTS, REGIME_LABELS,
 )
@@ -442,6 +447,156 @@ class TestKRTransmissionScorer:
 
 
 # ============================================================
+# TestEconomicFundamentalsAnalyzer (~25 tests)
+# ============================================================
+
+class TestEconomicFundamentalsAnalyzer:
+
+    def test_fundamentals_weights_sum(self):
+        assert abs(sum(FUNDAMENTALS_WEIGHTS.values()) - 1.00) < 0.001
+
+    # --- Inflation Tests ---
+
+    def test_inflation_high(self):
+        r = _score_inflation(cpi_yoy=5.0)
+        assert r['score'] < 30
+
+    def test_inflation_at_target(self):
+        r = _score_inflation(cpi_yoy=2.0)
+        assert 50 <= r['score'] <= 70
+
+    def test_inflation_below_target(self):
+        r = _score_inflation(cpi_yoy=1.0)
+        assert r['score'] >= 65
+
+    def test_inflation_core_pce_priority(self):
+        r = _score_inflation(cpi_yoy=5.0, core_pce_yoy=2.0)
+        # Core PCE at 2% should give higher score despite CPI at 5%
+        assert r['score'] >= 50
+
+    def test_inflation_accelerating_penalty(self):
+        r_stable = _score_inflation(cpi_yoy=3.5, direction='stable')
+        r_accel = _score_inflation(cpi_yoy=3.5, direction='accelerating')
+        assert r_accel['score'] < r_stable['score']
+
+    def test_inflation_decelerating_bonus(self):
+        r_stable = _score_inflation(cpi_yoy=3.5, direction='stable')
+        r_decel = _score_inflation(cpi_yoy=3.5, direction='decelerating')
+        assert r_decel['score'] > r_stable['score']
+
+    def test_inflation_gap_in_components(self):
+        r = _score_inflation(cpi_yoy=4.0)
+        assert abs(r['components']['gap_from_target'] - 2.0) < 0.01
+
+    # --- Labor Tests ---
+
+    def test_labor_tight(self):
+        r = _score_labor(unemployment_rate=3.3, nfp_thousands=350,
+                         wage_growth_yoy=5.5)
+        assert r['score'] < 30
+
+    def test_labor_balanced(self):
+        r = _score_labor(unemployment_rate=4.2, nfp_thousands=150,
+                         wage_growth_yoy=3.5)
+        assert 40 <= r['score'] <= 65
+
+    def test_labor_weak(self):
+        r = _score_labor(unemployment_rate=6.0, nfp_thousands=30,
+                         wage_growth_yoy=1.5)
+        assert r['score'] >= 70
+
+    def test_labor_components_structure(self):
+        r = _score_labor(unemployment_rate=4.0)
+        assert 'unemployment' in r['components']
+        assert 'nfp' in r['components']
+        assert 'wages' in r['components']
+
+    # --- Growth Tests ---
+
+    def test_growth_overheating(self):
+        r = _score_growth(gdp_growth_annualized=5.0, ism_manufacturing=58,
+                          ism_services=60)
+        assert r['score'] < 25
+
+    def test_growth_moderate(self):
+        r = _score_growth(gdp_growth_annualized=2.5, ism_manufacturing=51,
+                          ism_services=52)
+        assert 40 <= r['score'] <= 60
+
+    def test_growth_recession(self):
+        r = _score_growth(gdp_growth_annualized=-1.0, ism_manufacturing=42,
+                          ism_services=45, lei_change_6m=-8.0)
+        assert r['score'] >= 80
+
+    def test_growth_lei_leading(self):
+        r_pos = _score_growth(gdp_growth_annualized=2.5, lei_change_6m=3.0)
+        r_neg = _score_growth(gdp_growth_annualized=2.5, lei_change_6m=-6.0)
+        assert r_neg['score'] > r_pos['score']
+
+    # --- Shock Tests ---
+
+    def test_shock_none(self):
+        r = _score_shock(shock_level='none')
+        assert r['score'] == 50
+
+    def test_shock_crisis_deflationary(self):
+        r = _score_shock(shock_level='crisis', shock_type='pandemic',
+                         is_inflationary=False)
+        assert r['score'] >= 90
+
+    def test_shock_crisis_inflationary(self):
+        r = _score_shock(shock_level='crisis', shock_type='energy_crisis',
+                         is_inflationary=True)
+        assert r['score'] <= 15
+
+    def test_shock_long_duration(self):
+        r_short = _score_shock(shock_level='severe', duration_months=3)
+        r_long = _score_shock(shock_level='severe', duration_months=18)
+        assert r_long['score'] > r_short['score']
+
+    # --- Comprehensive Tests ---
+
+    def test_analyze_default(self):
+        r = analyze_fundamentals()
+        assert 0 <= r['fundamentals_score'] <= 100
+        assert r['pressure_label'] in PRESSURE_LABELS
+
+    def test_analyze_strong_hike_pressure(self):
+        r = analyze_fundamentals(
+            cpi_yoy=6.0, inflation_direction='accelerating',
+            unemployment_rate=3.2, nfp_thousands=400,
+            wage_growth_yoy=6.0, gdp_growth_annualized=4.5,
+            ism_manufacturing=58,
+        )
+        assert r['fundamentals_score'] < 25
+        assert r['pressure_label'] == 'strong_hike'
+
+    def test_analyze_strong_cut_pressure(self):
+        r = analyze_fundamentals(
+            cpi_yoy=1.0, inflation_direction='falling',
+            unemployment_rate=6.5, nfp_thousands=20,
+            wage_growth_yoy=1.5, gdp_growth_annualized=-1.0,
+            ism_manufacturing=42, shock_level='severe',
+            shock_type='financial_crisis',
+        )
+        assert r['fundamentals_score'] >= 75
+        assert r['pressure_label'] == 'strong_cut'
+
+    def test_dual_mandate_both_satisfied(self):
+        r = analyze_fundamentals(cpi_yoy=2.0, unemployment_rate=4.2)
+        assert 'satisfied' in r['dual_mandate_assessment'].lower() or \
+               'flexibility' in r['dual_mandate_assessment'].lower()
+
+    def test_dual_mandate_inflation_challenged(self):
+        r = analyze_fundamentals(cpi_yoy=5.0, unemployment_rate=4.2)
+        assert 'inflation' in r['dual_mandate_assessment'].lower() or \
+               'price' in r['dual_mandate_assessment'].lower()
+
+    def test_pressure_labels_count(self):
+        assert len(PRESSURE_LABELS) == 5
+
+
+# ============================================================
 # TestRegimeSynthesizer (~15 tests)
 # ============================================================
 
@@ -505,6 +660,14 @@ class TestRegimeSynthesizer:
         assert 'stance' in r['us_regime']
         assert 'rate' in r['us_regime']
         assert 'liquidity' in r['us_regime']
+        assert 'fundamentals' in r['us_regime']
+
+    def test_fundamentals_in_regime(self):
+        r = synthesize_regime(cpi_yoy=5.0, unemployment_rate=3.5)
+        f = r['us_regime']['fundamentals']
+        assert 'fundamentals_score' in f
+        assert 'pressure_label' in f
+        assert 'components' in f
 
     def test_kr_impact_present(self):
         r = synthesize_regime()
@@ -523,6 +686,10 @@ class TestRegimeSynthesizer:
             'yield_curve_2y10y', 'fed_bs_change_pct', 'm2_growth_yoy',
             'dxy_change_3m', 'rrp_change_pct', 'kr_rate',
             'usdkrw_change_3m', 'foreign_flow_5d', 'bok_direction',
+            # Fundamentals inputs
+            'cpi_yoy', 'unemployment_rate', 'nfp_thousands',
+            'wage_growth_yoy', 'gdp_growth_annualized',
+            'ism_manufacturing', 'shock_level',
         ]
         for key in expected_keys:
             assert key in r['data_inputs']

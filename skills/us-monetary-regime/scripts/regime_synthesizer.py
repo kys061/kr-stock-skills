@@ -1,14 +1,31 @@
-"""us-monetary-regime: 종합 레짐 판정 + 한국 오버레이."""
+"""us-monetary-regime: 종합 레짐 판정 + 한국 오버레이.
+
+4-Component Regime Score:
+  stance     × 0.25  (Fed 기조 — FOMC, 점도표, QT/QE)
+  rate       × 0.20  (금리 트렌드 — FFR 수준/방향/시장기대)
+  liquidity  × 0.25  (유동성 — Fed B/S, M2, DXY, RRP)
+  fundamentals × 0.30 (경제 펀더멘털 — 물가, 고용, 성장, 충격)
+"""
 
 from fed_stance_analyzer import analyze_fed_stance
 from rate_trend_classifier import classify_rate_trend
 from liquidity_tracker import track_liquidity
+from economic_fundamentals_analyzer import analyze_fundamentals
 from kr_transmission_scorer import score_kr_transmission
 
 
 # --- Regime Weights (sum = 1.00) ---
 
 REGIME_WEIGHTS = {
+    'stance': 0.25,
+    'rate': 0.20,
+    'liquidity': 0.25,
+    'fundamentals': 0.30,
+}
+
+# --- Legacy 3-component weights (backward compatibility) ---
+
+REGIME_WEIGHTS_LEGACY = {
     'stance': 0.35,
     'rate': 0.30,
     'liquidity': 0.35,
@@ -54,8 +71,24 @@ def synthesize_regime(fomc_tone='neutral', dot_plot='stable',
                       fed_bs_change_pct=0.0, m2_growth_yoy=0.0,
                       dxy_change_3m=0.0, rrp_change_pct=0.0,
                       kr_rate=3.50, usdkrw_change_3m=0.0,
-                      foreign_flow_5d=0, bok_direction='hold'):
+                      foreign_flow_5d=0, bok_direction='hold',
+                      # --- New: Economic Fundamentals ---
+                      cpi_yoy=3.0, core_pce_yoy=None,
+                      inflation_direction='stable',
+                      unemployment_rate=4.0,
+                      nfp_thousands=150,
+                      wage_growth_yoy=3.5,
+                      gdp_growth_annualized=2.5,
+                      ism_manufacturing=50.0,
+                      ism_services=52.0,
+                      lei_change_6m=0.0,
+                      shock_level='none',
+                      shock_type='other',
+                      shock_duration_months=0,
+                      shock_is_inflationary=False):
     """US 통화정책 레짐 종합 분석 + 한국 오버레이.
+
+    4-Component: stance(0.25) + rate(0.20) + liquidity(0.25) + fundamentals(0.30)
 
     Returns:
         dict: {us_regime, kr_impact, overlay, sector_overlays,
@@ -88,18 +121,37 @@ def synthesize_regime(fomc_tone='neutral', dot_plot='stable',
         rrp_change_pct=rrp_change_pct,
     )
 
-    # 종합 레짐 점수
+    # Sub-module 4: 경제 펀더멘털 (NEW)
+    fundamentals = analyze_fundamentals(
+        cpi_yoy=cpi_yoy,
+        core_pce_yoy=core_pce_yoy,
+        inflation_direction=inflation_direction,
+        unemployment_rate=unemployment_rate,
+        nfp_thousands=nfp_thousands,
+        wage_growth_yoy=wage_growth_yoy,
+        gdp_growth_annualized=gdp_growth_annualized,
+        ism_manufacturing=ism_manufacturing,
+        ism_services=ism_services,
+        lei_change_6m=lei_change_6m,
+        shock_level=shock_level,
+        shock_type=shock_type,
+        shock_duration_months=shock_duration_months,
+        shock_is_inflationary=shock_is_inflationary,
+    )
+
+    # 종합 레짐 점수 (4-component)
     stance_normalized = _normalize_stance_to_0_100(stance['stance_score'])
     regime_score = round(
         stance_normalized * REGIME_WEIGHTS['stance'] +
         rate['rate_score'] * REGIME_WEIGHTS['rate'] +
-        liquidity['liquidity_score'] * REGIME_WEIGHTS['liquidity'],
+        liquidity['liquidity_score'] * REGIME_WEIGHTS['liquidity'] +
+        fundamentals['fundamentals_score'] * REGIME_WEIGHTS['fundamentals'],
         1,
     )
     regime_score = max(0, min(100, regime_score))
     regime_label = _classify_regime(regime_score)
 
-    # Sub-module 4: 한국 전이
+    # Sub-module 5: 한국 전이
     kr_impact = score_kr_transmission(
         us_regime_score=regime_score,
         kr_rate=kr_rate,
@@ -115,7 +167,8 @@ def synthesize_regime(fomc_tone='neutral', dot_plot='stable',
         f"(score {regime_score}/100). "
         f"Fed stance: {stance['stance_label']}, "
         f"Rate trend: {rate['rate_regime']}, "
-        f"Liquidity: {liquidity['liquidity_trend']}. "
+        f"Liquidity: {liquidity['liquidity_trend']}, "
+        f"Fundamentals: {fundamentals['pressure_label']}. "
         f"KR impact: {kr_impact['impact_label']}, "
         f"Overlay: {kr_impact['overlay']:+.1f}pts. "
         f"{REGIME_DESCRIPTIONS.get(regime_label, '')}"
@@ -128,6 +181,7 @@ def synthesize_regime(fomc_tone='neutral', dot_plot='stable',
             'stance': stance,
             'rate': rate,
             'liquidity': liquidity,
+            'fundamentals': fundamentals,
         },
         'kr_impact': kr_impact,
         'overlay': kr_impact['overlay'],
@@ -153,5 +207,20 @@ def synthesize_regime(fomc_tone='neutral', dot_plot='stable',
             'usdkrw_change_3m': usdkrw_change_3m,
             'foreign_flow_5d': foreign_flow_5d,
             'bok_direction': bok_direction,
+            # Fundamentals inputs
+            'cpi_yoy': cpi_yoy,
+            'core_pce_yoy': core_pce_yoy,
+            'inflation_direction': inflation_direction,
+            'unemployment_rate': unemployment_rate,
+            'nfp_thousands': nfp_thousands,
+            'wage_growth_yoy': wage_growth_yoy,
+            'gdp_growth_annualized': gdp_growth_annualized,
+            'ism_manufacturing': ism_manufacturing,
+            'ism_services': ism_services,
+            'lei_change_6m': lei_change_6m,
+            'shock_level': shock_level,
+            'shock_type': shock_type,
+            'shock_duration_months': shock_duration_months,
+            'shock_is_inflationary': shock_is_inflationary,
         },
     }
