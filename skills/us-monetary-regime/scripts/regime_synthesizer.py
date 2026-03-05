@@ -46,6 +46,139 @@ REGIME_DESCRIPTIONS = {
 }
 
 
+# --- Rate Outlook ---
+
+RATE_OUTLOOK_LABELS = {
+    'hike_likely': '금리 인상 가능성 높음',
+    'hike_lean': '금리 인상 쪽으로 기울어짐',
+    'hold_hawkish': '동결 유지 (매파적 기조)',
+    'hold_neutral': '동결 유지 (중립)',
+    'hold_dovish': '동결 유지 (비둘기파적 기조)',
+    'cut_lean': '금리 인하 쪽으로 기울어짐',
+    'cut_likely': '금리 인하 가능성 높음',
+}
+
+
+def _generate_rate_outlook(regime_score, stance, rate, fundamentals):
+    """4-컴포넌트 종합 결과를 바탕으로 금리 방향 판단 요약 생성.
+
+    Args:
+        regime_score: float, 종합 레짐 점수 (0-100).
+        stance: dict, Fed 기조 분석 결과.
+        rate: dict, 금리 트렌드 분석 결과.
+        fundamentals: dict, 경제 펀더멘털 분석 결과.
+
+    Returns:
+        dict: {direction, label, confidence, reasoning, key_factors}
+    """
+    pressure = fundamentals['pressure_label']
+    stance_label = stance['stance_label']
+    rate_regime = rate['rate_regime']
+    fund_score = fundamentals['fundamentals_score']
+
+    # --- 방향 판단 ---
+    # 펀더멘털 압력(30%) + 레짐 점수 기반 종합 판단
+    if regime_score < 20:
+        direction = 'hike_likely'
+        confidence = 'high'
+    elif regime_score < 35:
+        direction = 'hike_lean'
+        confidence = 'medium'
+    elif regime_score < 45:
+        direction = 'hold_hawkish'
+        confidence = 'medium'
+    elif regime_score < 55:
+        direction = 'hold_neutral'
+        confidence = 'low'
+    elif regime_score < 65:
+        direction = 'hold_dovish'
+        confidence = 'medium'
+    elif regime_score < 80:
+        direction = 'cut_lean'
+        confidence = 'medium'
+    else:
+        direction = 'cut_likely'
+        confidence = 'high'
+
+    # --- 핵심 요인 수집 ---
+    key_factors = []
+
+    # 인플레이션
+    infl = fundamentals['components']['inflation']
+    infl_ref = infl['components']['reference_rate']
+    infl_dir = infl['components']['direction']
+    if infl_ref > 3.0:
+        key_factors.append(f'물가 {infl_ref:.1f}% (목표 2% 초과) → 인상 압력')
+    elif infl_ref < 1.5:
+        key_factors.append(f'물가 {infl_ref:.1f}% (목표 하회) → 인하 여유')
+    else:
+        key_factors.append(f'물가 {infl_ref:.1f}% (목표 근처)')
+    if infl_dir == 'accelerating':
+        key_factors.append('인플레이션 가속 중 → 인하 제약')
+    elif infl_dir == 'decelerating':
+        key_factors.append('인플레이션 둔화 중 → 인하 여유 확대')
+
+    # 고용
+    labor = fundamentals['components']['labor']
+    unemp = labor['components']['unemployment']['rate']
+    if unemp < 3.5:
+        key_factors.append(f'실업률 {unemp}% (극도로 타이트) → 인상 압력')
+    elif unemp > 5.0:
+        key_factors.append(f'실업률 {unemp}% (약화) → 인하 압력')
+    else:
+        key_factors.append(f'실업률 {unemp}%')
+
+    # 성장
+    growth = fundamentals['components']['growth']
+    gdp = growth['components']['gdp']['growth']
+    if gdp < 1.0:
+        key_factors.append(f'GDP {gdp}% (정체/침체) → 인하 압력')
+    elif gdp > 4.0:
+        key_factors.append(f'GDP {gdp}% (과열) → 인상 압력')
+
+    # 외생적 충격
+    shock = fundamentals['components']['shock']
+    shock_lvl = shock['components']['shock_level']
+    if shock_lvl not in ('none', 'minor'):
+        shock_inf = shock['components']['is_inflationary']
+        if shock_inf:
+            key_factors.append(
+                f'{shock["interpretation"]} → 스태그플레이션 우려, 인하 제약')
+        else:
+            key_factors.append(f'{shock["interpretation"]}')
+
+    # --- 요약 문장 생성 ---
+    label = RATE_OUTLOOK_LABELS.get(direction, direction)
+    dual = fundamentals['dual_mandate_assessment']
+
+    if direction in ('hike_likely', 'hike_lean'):
+        reasoning = (
+            f'펀더멘털 압력이 {pressure}로 금리 인상을 시사. '
+            f'{dual}. '
+            f'Fed 기조 {stance_label}, 금리 트렌드 {rate_regime}.'
+        )
+    elif direction in ('cut_likely', 'cut_lean'):
+        reasoning = (
+            f'펀더멘털 압력이 {pressure}로 금리 인하 여유 존재. '
+            f'{dual}. '
+            f'Fed 기조 {stance_label}, 금리 트렌드 {rate_regime}.'
+        )
+    else:
+        reasoning = (
+            f'펀더멘털 압력 {pressure}, 금리 변동보다 동결 유지 가능성 높음. '
+            f'{dual}. '
+            f'Fed 기조 {stance_label}, 금리 트렌드 {rate_regime}.'
+        )
+
+    return {
+        'direction': direction,
+        'label': label,
+        'confidence': confidence,
+        'reasoning': reasoning,
+        'key_factors': key_factors,
+    }
+
+
 def _normalize_stance_to_0_100(stance_score):
     """stance_score (-100~+100) -> 0~100."""
     return max(0, min(100, (stance_score + 100) / 2))
@@ -161,6 +294,11 @@ def synthesize_regime(fomc_tone='neutral', dot_plot='stable',
         bok_direction=bok_direction,
     )
 
+    # Rate Outlook (금리 방향 판단 요약)
+    rate_outlook = _generate_rate_outlook(
+        regime_score, stance, rate, fundamentals,
+    )
+
     # Summary
     summary = (
         f"US Monetary Regime: {regime_label.upper()} "
@@ -169,6 +307,8 @@ def synthesize_regime(fomc_tone='neutral', dot_plot='stable',
         f"Rate trend: {rate['rate_regime']}, "
         f"Liquidity: {liquidity['liquidity_trend']}, "
         f"Fundamentals: {fundamentals['pressure_label']}. "
+        f"▶ 금리 방향: {rate_outlook['label']} "
+        f"(확신도: {rate_outlook['confidence']}). "
         f"KR impact: {kr_impact['impact_label']}, "
         f"Overlay: {kr_impact['overlay']:+.1f}pts. "
         f"{REGIME_DESCRIPTIONS.get(regime_label, '')}"
@@ -178,6 +318,7 @@ def synthesize_regime(fomc_tone='neutral', dot_plot='stable',
         'us_regime': {
             'regime_score': regime_score,
             'regime_label': regime_label,
+            'rate_outlook': rate_outlook,
             'stance': stance,
             'rate': rate,
             'liquidity': liquidity,

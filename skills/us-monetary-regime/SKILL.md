@@ -85,6 +85,27 @@ result = apply_monetary_overlay(base_score=60.0, overlay=None)
 - stance × 0.25 + rate × 0.20 + liquidity × 0.25 + **fundamentals × 0.30**
 - 0~35: Tightening / 35~65: Hold / 65~100: Easing
 
+### Rate Outlook (금리 방향 판단 요약)
+
+4-컴포넌트 분석 결과를 종합하여 **금리가 인상될지 인하될지** 명확한 판단문을 생성한다.
+
+| 방향 | Regime Score | 판단 |
+|------|:-----------:|------|
+| hike_likely | 0-20 | 금리 인상 가능성 높음 |
+| hike_lean | 20-35 | 금리 인상 쪽으로 기울어짐 |
+| hold_hawkish | 35-45 | 동결 유지 (매파적 기조) |
+| hold_neutral | 45-55 | 동결 유지 (중립) |
+| hold_dovish | 55-65 | 동결 유지 (비둘기파적 기조) |
+| cut_lean | 65-80 | 금리 인하 쪽으로 기울어짐 |
+| cut_likely | 80-100 | 금리 인하 가능성 높음 |
+
+**출력 항목**:
+- `direction`: 방향 코드 (7단계)
+- `label`: 한글 판단문 (예: "금리 인하 쪽으로 기울어짐")
+- `confidence`: 확신도 (high/medium/low)
+- `reasoning`: 판단 근거 요약문
+- `key_factors`: 핵심 요인 리스트 (물가/고용/성장/충격별 방향 영향)
+
 ### WebSearch 필수 조회 항목
 분석 실행 시 반드시 아래 데이터를 WebSearch로 수집한다:
 1. Fed 기준금리, FOMC 최신 성명서 기조

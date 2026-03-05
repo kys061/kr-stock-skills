@@ -30,6 +30,7 @@ from economic_fundamentals_analyzer import (
 )
 from regime_synthesizer import (
     synthesize_regime, REGIME_WEIGHTS, REGIME_LABELS,
+    RATE_OUTLOOK_LABELS, _generate_rate_outlook,
 )
 
 
@@ -699,6 +700,81 @@ class TestRegimeSynthesizer:
             for dp in ['higher', 'lower']:
                 r = synthesize_regime(fomc_tone=tone, dot_plot=dp)
                 assert 0 <= r['us_regime']['regime_score'] <= 100
+
+    def test_rate_outlook_present(self):
+        r = synthesize_regime()
+        assert 'rate_outlook' in r['us_regime']
+        outlook = r['us_regime']['rate_outlook']
+        assert 'direction' in outlook
+        assert 'label' in outlook
+        assert 'confidence' in outlook
+        assert 'reasoning' in outlook
+        assert 'key_factors' in outlook
+
+    def test_rate_outlook_direction_valid(self):
+        r = synthesize_regime()
+        assert r['us_regime']['rate_outlook']['direction'] in RATE_OUTLOOK_LABELS
+
+    def test_rate_outlook_confidence_valid(self):
+        r = synthesize_regime()
+        assert r['us_regime']['rate_outlook']['confidence'] in (
+            'high', 'medium', 'low')
+
+    def test_rate_outlook_easing_shows_cut(self):
+        r = synthesize_regime(
+            fomc_tone='dovish', dot_plot='lower',
+            qt_qe='active_qe', speaker_tone=0.8,
+            current_ffr=3.50, ffr_6m_ago=4.50, ffr_12m_ago=5.50,
+            last_change_bp=-50, next_meeting_cut_prob=0.9,
+            fed_bs_change_pct=1.5, m2_growth_yoy=7.0,
+            dxy_change_3m=-6.0, rrp_change_pct=-25.0,
+            unemployment_rate=5.5, gdp_growth_annualized=0.5,
+            cpi_yoy=1.5,
+        )
+        outlook = r['us_regime']['rate_outlook']
+        assert outlook['direction'] in ('cut_likely', 'cut_lean', 'hold_dovish')
+
+    def test_rate_outlook_tightening_shows_hike(self):
+        r = synthesize_regime(
+            fomc_tone='hawkish', dot_plot='higher',
+            qt_qe='active_qt', speaker_tone=-0.8,
+            current_ffr=5.50, ffr_6m_ago=4.50, ffr_12m_ago=3.50,
+            last_change_bp=75, next_meeting_hike_prob=0.9,
+            fed_bs_change_pct=-2.0, m2_growth_yoy=-3.0,
+            dxy_change_3m=8.0, rrp_change_pct=25.0,
+            cpi_yoy=6.0, unemployment_rate=3.0,
+            gdp_growth_annualized=5.0,
+        )
+        outlook = r['us_regime']['rate_outlook']
+        assert outlook['direction'] in ('hike_likely', 'hike_lean', 'hold_hawkish')
+
+    def test_rate_outlook_hold_default(self):
+        r = synthesize_regime()
+        outlook = r['us_regime']['rate_outlook']
+        assert 'hold' in outlook['direction']
+
+    def test_rate_outlook_in_summary(self):
+        r = synthesize_regime()
+        assert '금리 방향' in r['summary']
+
+    def test_rate_outlook_key_factors_not_empty(self):
+        r = synthesize_regime()
+        assert len(r['us_regime']['rate_outlook']['key_factors']) > 0
+
+    def test_rate_outlook_shock_factor(self):
+        r = synthesize_regime(
+            shock_level='severe', shock_type='energy_crisis',
+            shock_is_inflationary=True,
+        )
+        factors = r['us_regime']['rate_outlook']['key_factors']
+        shock_mentioned = any('충격' in f or '위기' in f or '스태그' in f
+                              for f in factors)
+        assert shock_mentioned
+
+    def test_rate_outlook_label_matches_direction(self):
+        r = synthesize_regime()
+        outlook = r['us_regime']['rate_outlook']
+        assert outlook['label'] == RATE_OUTLOOK_LABELS[outlook['direction']]
 
 
 # ============================================================
