@@ -57,7 +57,37 @@ diff <(cat skills/{skill_name}/SKILL.md) <(cat ~/.claude/skills/{skill_name}/SKI
 
 > **주의**: `~/.claude/skills/` 동기화를 빠뜨리면 Claude Code가 구버전 SKILL.md를 참조하여 잘못된 분석을 수행할 수 있다. 스크립트/상수 변경 시 SKILL.md도 함께 업데이트하고 동기화해야 한다.
 
-### 5. US 통화정책 오버레이 (필수)
+### 5. 데이터 소스 우선순위 (Fallback Policy)
+
+스킬 실행 시 데이터 수집은 아래 우선순위를 따른다:
+
+```
+Tier 1: KRX Open API (인증키 기반, 일 10,000회)  ← 신청 완료, 승인 대기
+Tier 2: KIS Open API (한국투자증권, 계좌 기반)
+Tier 3: KRClient (pykrx/FDR) — KRX 차단 시 사용 불가
+Tier 4: WebSearch 폴백 (항상 가용)
+```
+
+#### 5-1. WebSearch 폴백 규칙
+Tier 1-3이 모두 실패(403/에러/미설정)할 경우 **WebSearch로 데이터를 수집**하여 분석을 계속한다:
+
+- **개별 종목 분석**: 종목명+지표명으로 검색 (예: "알테오젠 PER PBR 시가총액 2026")
+- **전 종목 스크리닝**: 섹터별/조건별 다중 검색 후 후보군 통합
+- **수급 데이터**: "코스닥 외국인 순매수 상위" 등 집계 데이터 검색
+- **기술적 지표**: 증권사 리포트, 목표가, 차트 분석 기사 활용
+
+#### 5-2. WebSearch 폴백 시 리포트 표기
+WebSearch 폴백으로 분석한 경우 리포트에 반드시 아래를 명시한다:
+```markdown
+> **데이터 소스**: WebSearch 폴백 (KRX API 미가용)
+> **정밀도 한계**: PER/PBR/ROE 등 정량 지표는 뉴스/리포트 기반 추정치
+```
+
+#### 5-3. KRX Open API 승인 후 전환
+API 승인 완료 시 `_kr-common/providers/`에 `krx_openapi_provider.py`를 추가하고,
+`kr_client.py`에서 Tier 1 우선 사용으로 전환한다.
+
+### 6. US 통화정책 오버레이 (필수)
 
 아래 12개 스킬 실행 시 **반드시** US 통화정책 분석을 포함한다:
 
@@ -82,7 +112,7 @@ diff <(cat skills/{skill_name}/SKILL.md) <(cat ~/.claude/skills/{skill_name}/SKI
 2. US Regime Score 산출 (stance×0.35 + rate×0.30 + liquidity×0.35)
 3. 리포트에 US 통화정책 섹션 필수 포함
 
-### 6. 테스트
+### 7. 테스트
 
 스크립트 수정 시 해당 스킬의 테스트를 실행하여 기존 테스트가 깨지지 않았는지 확인한다:
 ```bash

@@ -6,6 +6,12 @@ description: KOSPI200/KOSDAQ150 종목의 MA200 돌파 비율 기반 시장폭 0
 # kr-market-breadth
 
 > 한국 시장폭 분석 스킬 - KOSPI200/KOSDAQ150 기반 0-100 종합 점수 산출
+> **KRClient 불가 시 WebSearch 폴백으로 분석을 계속한다.**
+
+## 데이터 소스 우선순위
+
+1순위: KRX Open API / KIS API → 2순위: KRClient (pykrx/FDR) → 3순위: WebSearch 폴백.
+KRClient 실패 시 WebSearch로 데이터를 수집하여 분석을 계속하며, 리포트에 데이터 소스를 명시한다.
 
 ## 개요
 

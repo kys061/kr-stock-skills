@@ -5,6 +5,13 @@ description: 한국 시장 테마(2차전지/AI/반도체 등) 트렌드 자동 
 
 # kr-theme-detector
 
+> **KRClient 불가 시 WebSearch 폴백으로 분석을 계속한다.**
+
+## 데이터 소스 우선순위
+
+1순위: KRX Open API / KIS API → 2순위: KRClient (pykrx/FDR) → 3순위: WebSearch 폴백.
+KRClient 실패 시 WebSearch로 데이터를 수집하여 분석을 계속하며, 리포트에 데이터 소스를 명시한다.
+
 ## 개요
 
 한국 시장의 테마(섹터/산업) 트렌드를 탐지하고 분석하는 스킬.

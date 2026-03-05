@@ -5,6 +5,13 @@ description: 업종별 상승추세 종목 비율 분석으로 시장 건강도 
 
 # kr-uptrend-analyzer
 
+> **KRClient 불가 시 WebSearch 폴백으로 분석을 계속한다.**
+
+## 데이터 소스 우선순위
+
+1순위: KRX Open API / KIS API → 2순위: KRClient (pykrx/FDR) → 3순위: WebSearch 폴백.
+KRClient 실패 시 WebSearch로 데이터를 수집하여 분석을 계속하며, 리포트에 데이터 소스를 명시한다.
+
 ## 개요
 
 한국 시장의 업트렌드 종목 비율을 업종별로 분석하여 시장 건강도를 진단하는 스킬.
