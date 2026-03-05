@@ -27,7 +27,7 @@ done
 
 echo "================================================"
 echo "  Korean Stock Trading Skills Installer"
-echo "  44 skills for KOSPI/KOSDAQ analysis"
+echo "  46 skills for KOSPI/KOSDAQ analysis"
 echo "================================================"
 echo ""
 

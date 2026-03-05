@@ -59,7 +59,7 @@ Claude Code에서 `/스킬명` 형태로 호출합니다:
 
 ---
 
-## Skills Reference (44개)
+## Skills Reference (46개)
 
 ### Phase 1: 공통 데이터 클라이언트
 
