@@ -68,6 +68,27 @@ python conviction_scorer.py --report-dir ./reports/
 | kr-canslim-screener | 셋업 가용 입력 |
 | kr-growth-outlook | 성장 전망 입력 |
 
+## US 통화정책 오버레이 (필수)
+
+전략 통합 시 **반드시** US 통화정책 영향을 포함한다.
+
+### 적용 절차
+1. WebSearch로 현재 Fed 기준금리, FOMC 기조, DXY, BOK 기준금리, 한미 금리차 조회
+2. US Regime Score 산출 (stance×0.35 + rate×0.30 + liquidity×0.35)
+3. B방식 오버레이 계산: `(regime_score - 50) × 0.30 × sector_sensitivity`
+4. 확신도 점수에 오버레이 가산: `final_conviction = base_conviction + overlay`
+
+### 확신도 존 조정
+- **Easing**: 확신도 존 상향 가능 (MODERATE → HIGH)
+- **Tightening**: 확신도 존 하향 압력 (HIGH → MODERATE)
+- **POLICY_PIVOT 패턴**: US 정책 전환 시 자동 트리거
+
+### 리포트 필수 포함 항목
+- US Regime Score 및 Label (tightening/hold/easing)
+- 한국 전이 5채널 점수 (금리차/환율/위험선호/섹터로테이션/BOK)
+- 기본 확신도 → 오버레이 → 최종 확신도 과정
+- POLICY_PIVOT 패턴 해당 여부
+
 ---
 
 ## Output Rule (마크다운 리포트 저장)

@@ -32,11 +32,28 @@ cp -r skills/{skill_name}/ ~/.claude/skills/{skill_name}/
 
 ### 5. US 통화정책 오버레이 (필수)
 
-`kr-stock-analysis` 종합 분석 시 **반드시** US 통화정책 오버레이를 포함한다:
+아래 12개 스킬 실행 시 **반드시** US 통화정책 분석을 포함한다:
+
+**스코어링 오버레이 적용 (점수 조정)**:
+- `kr-stock-analysis` — 종합 점수에 B방식 오버레이 가산
+- `kr-sector-analyst` — 섹터별 민감도 반영 영향도 평가
+- `kr-growth-outlook` — 금리 환경의 할인율 영향 반영
+- `kr-portfolio-manager` — 자산배분에 통화정책 방향 반영
+- `kr-strategy-synthesizer` — 확신도에 오버레이 가산
+
+**컨텍스트 필수 포함 (정성 분석)**:
+- `kr-macro-regime` — Fed 정책의 한국 레짐 전환 영향
+- `kr-market-environment` — US 통화정책 현황 별도 섹션
+- `kr-market-breadth` — 글로벌 유동성과 시장폭 관계
+- `kr-scenario-analyzer` — 시나리오에 Fed 정책 경로 포함
+- `kr-earnings-trade` — 통화정책 환경의 실적 모멘텀 영향
+- `kr-economic-calendar` — FOMC 일정 병행 표시
+- `kr-weekly-strategy` — 주간 체크리스트에 Fed 변수 추가
+
+**공통 절차**:
 1. WebSearch로 현재 Fed 금리, FOMC 기조, DXY, BOK 금리, 한미 금리차 조회
-2. US Regime Score 산출 → B방식 오버레이 계산
-3. 기본 점수 + 오버레이 = 최종 점수로 리포트 작성
-4. 리포트에 US Regime 섹션, 전이 5채널, 섹터 민감도 포함
+2. US Regime Score 산출 (stance×0.35 + rate×0.30 + liquidity×0.35)
+3. 리포트에 US 통화정책 섹션 필수 포함
 
 ### 6. 테스트
 

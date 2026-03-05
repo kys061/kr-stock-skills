@@ -71,6 +71,21 @@ python3 skills/kr-economic-calendar/scripts/kr_economic_calendar.py \
 ## 참고 자료
 - `references/kr_economic_indicators.md` — 한국 주요 경제지표 상세 가이드
 
+## US 통화정책 컨텍스트 (필수)
+
+경제 캘린더 분석 시 **반드시** US 통화정책 일정을 포함한다.
+
+### 적용 절차
+1. WebSearch로 향후 FOMC 일정, Fed 금리 결정 예정일 조회
+2. 한국 금통위와 FOMC 일정의 시간적 관계 분석
+3. 한미 금리 결정 순서가 시장에 미치는 영향 평가
+
+### 리포트 필수 포함 항목
+- **US 경제 일정 섹션** (한국 캘린더와 병행 표시)
+  - 향후 FOMC 일정 및 시장 예상
+  - 미국 CPI/고용 발표일
+  - 한국 금통위와 FOMC 간격 분석
+
 ---
 
 ## Output Rule (마크다운 리포트 저장)

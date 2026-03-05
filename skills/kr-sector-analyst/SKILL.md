@@ -154,6 +154,35 @@ Read references/kr_sector_rotation.md
 4. **상대 성과 집중**: 절대 수익률이 아닌 상대 성과
 5. **한국 특수성**: 수출 주도, 반도체 비중, 외국인 수급 반영
 
+## US 통화정책 오버레이 (필수)
+
+섹터 분석 시 **반드시** US 통화정책 영향을 포함한다.
+
+### 적용 절차
+1. WebSearch로 현재 Fed 기준금리, FOMC 기조, DXY, BOK 기준금리, 한미 금리차 조회
+2. US Regime Score 산출 (stance×0.35 + rate×0.30 + liquidity×0.35)
+3. 각 섹터별 US 통화정책 민감도를 반영한 영향도 평가
+
+### 14 섹터 민감도
+
+| 섹터 | 민감도 | 섹터 | 민감도 |
+|------|:------:|------|:------:|
+| semiconductor | 1.3 | finance | 0.7 |
+| secondary_battery | 1.3 | insurance | 0.6 |
+| bio | 1.2 | retail | 0.5 |
+| it | 1.2 | defense | 0.4 |
+| auto | 1.1 | food | 0.3 |
+| shipbuilding | 1.0 | default | 0.7 |
+| steel | 0.9 | | |
+| chemical | 0.9 | | |
+| construction | 0.8 | | |
+
+### 리포트 필수 포함 항목
+- US Regime Score 및 Label (tightening/hold/easing)
+- 각 섹터의 US 통화정책 민감도 및 영향 방향
+- 한국 전이 5채널 (금리차/환율/위험선호/섹터로테이션/BOK)
+- 섹터 로테이션 시나리오에 US 정책 변수 반영
+
 ---
 
 ## Output Rule (마크다운 리포트 저장)

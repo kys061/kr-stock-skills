@@ -61,6 +61,26 @@ description: 6개 컴포넌트(TAM/SAM, 경쟁우위, 파이프라인, 실적경
 | kr-strategy-synthesizer | 8번째 확신도 컴포넌트 |
 | kr-canslim-screener | 성장주 스크리닝 후 딥 분석 |
 
+## US 통화정책 오버레이 (필수)
+
+성장 전망 분석 시 **반드시** US 통화정책 영향을 포함한다.
+
+### 적용 절차
+1. WebSearch로 현재 Fed 기준금리, FOMC 기조, DXY, BOK 기준금리, 한미 금리차 조회
+2. US Regime Score 산출 (stance×0.35 + rate×0.30 + liquidity×0.35)
+3. 금리 환경이 성장주 할인율(discount rate)에 미치는 영향 평가
+4. 섹터별 민감도를 반영한 성장 등급 조정
+
+### 성장 전망에 대한 US 통화정책 영향
+- **Easing (완화)**: 할인율↓ → 성장주 밸류에이션↑ → 등급 상향 가능
+- **Tightening (긴축)**: 할인율↑ → 성장주 밸류에이션↓ → 등급 하향 압력
+- **Hold (유지)**: 현 수준 유지, 방향성 모니터링
+
+### 리포트 필수 포함 항목
+- US Regime Score 및 Label
+- 금리 환경이 해당 종목/섹터 성장 할인율에 미치는 영향
+- 한미 금리차 추이와 외국인 자금 흐름 전망
+
 ---
 
 ## Output Rule (마크다운 리포트 저장)

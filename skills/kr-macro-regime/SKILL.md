@@ -108,6 +108,26 @@ KOSPI / 국고채 비율 + 60일 롤링 상관계수.
 | `references/regime_methodology_kr.md` | 크로스에셋 비율 분석 한국 적용 |
 | `references/historical_kr_regimes.md` | 한국 역사적 레짐 전환 사례 |
 
+## US 통화정책 컨텍스트 (필수)
+
+매크로 레짐 분석 시 **반드시** US 통화정책 환경을 포함한다.
+
+### 적용 절차
+1. WebSearch로 현재 Fed 기준금리, FOMC 기조, DXY, BOK 기준금리, 한미 금리차 조회
+2. US Regime Score 산출 (stance×0.35 + rate×0.30 + liquidity×0.35)
+3. Fed 정책 방향이 한국 크로스에셋 비율에 미치는 영향 평가
+
+### 한국 레짐에 대한 US 통화정책 영향
+- **Fed Easing**: 글로벌 유동성↑ → 한국 Broadening 레짐 전환 촉진
+- **Fed Tightening**: 글로벌 유동성↓ → 한국 Contraction/Concentration 압력
+- **DXY 강세**: 원화 약세 → 외국인 이탈 → Concentration
+- **DXY 약세**: 원화 강세 → 외국인 유입 → Broadening
+
+### 리포트 필수 포함 항목
+- US Regime Score 및 Fed 정책 방향
+- 한미 금리차와 한국 금리곡선(Component 2)의 연관성
+- Fed 정책이 한국 레짐 전환에 미치는 경로 분석
+
 ---
 
 ## Output Rule (마크다운 리포트 저장)

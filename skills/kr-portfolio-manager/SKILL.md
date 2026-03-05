@@ -45,6 +45,28 @@ python risk_calculator.py --holdings portfolio.json
 python rebalancing_engine.py --holdings portfolio.json --target balanced
 ```
 
+## US 통화정책 오버레이 (필수)
+
+포트폴리오 분석 시 **반드시** US 통화정책 영향을 포함한다.
+
+### 적용 절차
+1. WebSearch로 현재 Fed 기준금리, FOMC 기조, DXY, BOK 기준금리, 한미 금리차 조회
+2. US Regime Score 산출 (stance×0.35 + rate×0.30 + liquidity×0.35)
+3. 포트폴리오 내 각 종목의 섹터 민감도 가중 평균 → 포트폴리오 US 민감도 산출
+4. 자산배분 추천에 통화정책 방향 반영
+
+### 자산배분 조정 가이드
+| US Regime | 주식 비중 조정 | 채권 비중 조정 | 현금 |
+|-----------|:-------------:|:-------------:|:----:|
+| Easing | +5~10% | -5% | 유지 |
+| Hold | 유지 | 유지 | 유지 |
+| Tightening | -5~10% | +5% | +5% |
+
+### 리포트 필수 포함 항목
+- US Regime Score 및 Label
+- 포트폴리오의 US 통화정책 민감도 (가중 평균)
+- 한미 금리차에 따른 자산배분 조정 추천
+
 ---
 
 ## Output Rule (마크다운 리포트 저장)

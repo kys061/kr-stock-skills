@@ -188,6 +188,23 @@ Read references/analysis_patterns.md
 3. 증권사 리서치
 4. 애널리스트 컨센서스
 
+## US 통화정책 컨텍스트 (필수)
+
+시장 환경 분석 시 **반드시** US 통화정책 현황을 포함한다.
+
+### 적용 절차
+1. WebSearch로 현재 Fed 기준금리, FOMC 기조, DXY, BOK 기준금리, 한미 금리차 조회
+2. US Regime Score 산출 (stance×0.35 + rate×0.30 + liquidity×0.35)
+3. 6차원 분석에 US 통화정책 환경을 통합
+
+### 리포트 필수 포함 항목
+- **US 통화정책 현황 섹션** (별도 섹션으로 포함)
+  - Fed 기준금리 및 FOMC 최신 기조
+  - DXY 수준 및 추세
+  - 한미 금리차 (10년 기준)
+  - US Regime Label (tightening/hold/easing)
+- 한국 시장에 대한 전이 경로 요약 (환율/금리/수급)
+
 ---
 
 ## Output Rule (마크다운 리포트 저장)

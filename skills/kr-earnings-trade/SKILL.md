@@ -46,6 +46,23 @@ python3 skills/kr-earnings-trade/scripts/kr_earnings_trade_analyzer.py \
 - `references/scoring_methodology_kr.md` — 5팩터 스코어링 한국 적용
 - `references/kr_earnings_patterns.md` — 한국 실적 반응 패턴
 
+## US 통화정책 컨텍스트 (필수)
+
+실적 트레이드 분석 시 **반드시** US 통화정책 환경을 포함한다.
+
+### 적용 절차
+1. WebSearch로 현재 Fed 기준금리, FOMC 기조, DXY 조회
+2. 통화정책 환경이 실적 반응 강도에 미치는 영향 평가
+
+### 실적 반응과 US 통화정책 관계
+- **Easing 환경**: 유동성 풍부 → 실적 갭업 후 추가 상승 확률↑
+- **Tightening 환경**: 유동성 위축 → 실적 갭업에도 후속 매도 압력
+- 외국인 순매수 보너스 유효성이 통화정책 방향에 따라 변동
+
+### 리포트 필수 포함 항목
+- 현재 US 통화정책 환경 (easing/hold/tightening)
+- 통화정책 환경이 실적 모멘텀 지속성에 미치는 영향 평가
+
 ---
 
 ## Output Rule (마크다운 리포트 저장)
