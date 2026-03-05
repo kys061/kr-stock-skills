@@ -30,7 +30,15 @@
 cp -r skills/{skill_name}/ ~/.claude/skills/{skill_name}/
 ```
 
-### 5. 테스트
+### 5. US 통화정책 오버레이 (필수)
+
+`kr-stock-analysis` 종합 분석 시 **반드시** US 통화정책 오버레이를 포함한다:
+1. WebSearch로 현재 Fed 금리, FOMC 기조, DXY, BOK 금리, 한미 금리차 조회
+2. US Regime Score 산출 → B방식 오버레이 계산
+3. 기본 점수 + 오버레이 = 최종 점수로 리포트 작성
+4. 리포트에 US Regime 섹션, 전이 5채널, 섹터 민감도 포함
+
+### 6. 테스트
 
 스크립트 수정 시 해당 스킬의 테스트를 실행하여 기존 테스트가 깨지지 않았는지 확인한다:
 ```bash

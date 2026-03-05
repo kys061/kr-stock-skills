@@ -55,6 +55,36 @@ WebSearch 없이 즉시 계산 가능한 경량 성장성 점수:
 | SELL | 35-49 | 매도 |
 | STRONG_SELL | 0-34 | 적극 매도 |
 
+## US 통화정책 오버레이 (필수)
+
+종합 분석 시 **반드시** US 통화정책 영향을 포함한다.
+
+### 적용 절차
+1. WebSearch로 현재 Fed 기준금리, FOMC 기조, DXY, BOK 기준금리, 한미 금리차 조회
+2. US Regime Score 산출 (stance×0.35 + rate×0.30 + liquidity×0.35)
+3. B방식 오버레이 계산: `(regime_score - 50) × 0.30 × sector_sensitivity`
+4. 종합 점수에 오버레이 가산: `final_score = base_score + overlay`
+
+### 14 섹터 민감도
+
+| 섹터 | 민감도 | 섹터 | 민감도 |
+|------|:------:|------|:------:|
+| semiconductor | 1.3 | finance | 0.7 |
+| secondary_battery | 1.3 | insurance | 0.6 |
+| bio | 1.2 | retail | 0.5 |
+| it | 1.2 | defense | 0.4 |
+| auto | 1.1 | food | 0.3 |
+| shipbuilding | 1.0 | default | 0.7 |
+| steel | 0.9 | | |
+| chemical | 0.9 | | |
+| construction | 0.8 | | |
+
+### 리포트 필수 포함 항목
+- US Regime Score 및 Label (tightening/hold/easing)
+- 한국 전이 5채널 점수 (금리차/환율/위험선호/섹터로테이션/BOK)
+- 해당 종목의 섹터 민감도 및 오버레이 값
+- 기본 점수 → 오버레이 → 최종 점수 과정
+
 ## 실행 방법
 
 ```bash
@@ -66,6 +96,7 @@ python comprehensive_scorer.py --ticker 005930
 
 | 스킬 | 관계 |
 |------|------|
+| us-monetary-regime | **US 통화정책 오버레이 (필수 연동)** |
 | kr-value-dividend | 배당 가치주 스크리닝 |
 | kr-canslim-screener | CANSLIM 성장주 스크리닝 |
 | kr-institutional-flow | 수급 상세 분석 |
