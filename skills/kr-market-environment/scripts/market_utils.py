@@ -260,5 +260,65 @@ def main():
     return snapshot
 
 
+def estimate_foreign_flow_outlook(us_regime_score=None, kr_us_rate_diff=None,
+                                  usdkrw_trend=None):
+    """US 통화정책 기반 외국인 수급 전망 추정.
+
+    Optional. us-monetary-regime 결과가 있을 때만 활용.
+    입력이 모두 None이면 빈 dict 반환 (기존 호환).
+
+    Args:
+        us_regime_score: float or None, US 레짐 점수 (0~100).
+        kr_us_rate_diff: float or None, 한미 금리차 (%p, KR-US).
+        usdkrw_trend: str or None, 원달러 추세
+            ('strengthening'/'stable'/'weakening').
+
+    Returns:
+        dict or {}: 외국인 수급 전망.
+    """
+    if us_regime_score is None:
+        return {}
+
+    # 기본 전망: US regime score 기반
+    if us_regime_score >= 65:
+        base_outlook = 'net_inflow'
+        base_confidence = min(1.0, (us_regime_score - 50) / 50)
+        reasoning = 'US 완화 환경 → 글로벌 유동성 확대 → EM 자금 유입 기대'
+    elif us_regime_score <= 35:
+        base_outlook = 'net_outflow'
+        base_confidence = min(1.0, (50 - us_regime_score) / 50)
+        reasoning = 'US 긴축 환경 → 달러 강세 → EM 자금 이탈 압력'
+    else:
+        base_outlook = 'neutral'
+        base_confidence = 0.3
+        reasoning = 'US 정책 관망기 → 외국인 방향성 약함'
+
+    # 금리차 보정
+    if kr_us_rate_diff is not None:
+        if kr_us_rate_diff > 0.5:
+            base_confidence = min(1.0, base_confidence + 0.1)
+            reasoning += ' + 한국 금리 우위로 캐리 유인'
+        elif kr_us_rate_diff < -1.0:
+            base_confidence = min(1.0, base_confidence + 0.1)
+            if base_outlook == 'net_inflow':
+                base_outlook = 'neutral'
+                reasoning += ' (단, 금리 역전으로 유입 제한적)'
+
+    # 환율 추세 보정
+    if usdkrw_trend == 'strengthening':
+        base_confidence = min(1.0, base_confidence + 0.05)
+        reasoning += ' + 원화 강세 트렌드'
+    elif usdkrw_trend == 'weakening':
+        if base_outlook == 'net_inflow':
+            base_confidence = max(0.1, base_confidence - 0.1)
+            reasoning += ' (단, 원화 약세로 실현 불확실)'
+
+    return {
+        'outlook': base_outlook,
+        'confidence': round(base_confidence, 2),
+        'reasoning': reasoning,
+    }
+
+
 if __name__ == '__main__':
     main()

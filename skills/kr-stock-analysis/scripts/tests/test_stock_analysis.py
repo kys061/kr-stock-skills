@@ -80,16 +80,17 @@ class TestConstants:
     def test_supply_demand_5_signals(self):
         assert len(SUPPLY_DEMAND_ANALYSIS['signals']) == 5
 
-    def test_scoring_4_components(self):
-        assert len(COMPREHENSIVE_SCORING) == 4
+    def test_scoring_5_components(self):
+        assert len(COMPREHENSIVE_SCORING) == 5
         weights = sum(v['weight'] for v in COMPREHENSIVE_SCORING.values())
         assert abs(weights - 1.0) < 0.001
 
     def test_scoring_weights_match_design(self):
-        assert COMPREHENSIVE_SCORING['fundamental']['weight'] == 0.35
-        assert COMPREHENSIVE_SCORING['technical']['weight'] == 0.25
-        assert COMPREHENSIVE_SCORING['supply_demand']['weight'] == 0.25
-        assert COMPREHENSIVE_SCORING['valuation']['weight'] == 0.15
+        assert COMPREHENSIVE_SCORING['fundamental']['weight'] == 0.30
+        assert COMPREHENSIVE_SCORING['technical']['weight'] == 0.22
+        assert COMPREHENSIVE_SCORING['supply_demand']['weight'] == 0.22
+        assert COMPREHENSIVE_SCORING['valuation']['weight'] == 0.13
+        assert COMPREHENSIVE_SCORING['growth']['weight'] == 0.13
 
     def test_analysis_types_5(self):
         assert len(ANALYSIS_TYPES) == 5

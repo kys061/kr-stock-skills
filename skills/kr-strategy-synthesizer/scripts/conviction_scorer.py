@@ -1,43 +1,53 @@
-"""kr-strategy-synthesizer: 7-컴포넌트 확신도 계산."""
+"""kr-strategy-synthesizer: 9-컴포넌트 확신도 계산."""
 
 
 # ─── 확신도 스코어링 ───
 
 CONVICTION_COMPONENTS = {
     'market_structure': {
-        'weight': 0.18,
+        'weight': 0.15,
         'sources': ['kr-market-breadth', 'kr-uptrend-analyzer'],
         'description': '시장 참여도 건강성',
     },
     'distribution_risk': {
-        'weight': 0.18,
+        'weight': 0.14,
         'sources': ['kr-market-top-detector'],
         'description': '기관 매도 리스크 (역수)',
     },
     'bottom_confirmation': {
-        'weight': 0.12,
+        'weight': 0.09,
         'sources': ['kr-ftd-detector'],
         'description': '바닥 확인 시그널',
     },
     'macro_alignment': {
-        'weight': 0.18,
+        'weight': 0.14,
         'sources': ['kr-macro-regime'],
         'description': '거시 레짐 유리도',
     },
     'theme_quality': {
-        'weight': 0.12,
+        'weight': 0.09,
         'sources': ['kr-theme-detector'],
         'description': '섹터 모멘텀 품질',
     },
     'setup_availability': {
-        'weight': 0.10,
+        'weight': 0.08,
         'sources': ['kr-vcp-screener', 'kr-canslim-screener'],
         'description': '품질 셋업 가용성',
     },
     'signal_convergence': {
-        'weight': 0.12,
+        'weight': 0.11,
         'sources': ['all_required'],
         'description': '스킬 간 시그널 수렴도',
+    },
+    'growth_outlook': {
+        'weight': 0.10,
+        'sources': ['kr-growth-outlook'],
+        'description': '종목/섹터 성장성 전망',
+    },
+    'global_monetary': {
+        'weight': 0.10,
+        'sources': ['us-monetary-regime'],
+        'description': '글로벌 통화정책 환경',
     },
 }
 
@@ -145,11 +155,19 @@ def normalize_signal(raw_value, source_skill):
             count = int(raw_value) if raw_value else 0
         return min(100, count * 10 + 10)
 
+    elif source_skill == 'kr-growth-outlook':
+        # growth composite score: 이미 0-100
+        return max(0, min(100, float(raw_value)))
+
+    elif source_skill == 'us-monetary-regime':
+        # regime_score: 이미 0-100
+        return max(0, min(100, float(raw_value)))
+
     return max(0, min(100, float(raw_value)))
 
 
 def calc_component_scores(reports):
-    """7-컴포넌트 개별 점수 계산.
+    """9-컴포넌트 개별 점수 계산.
 
     Args:
         reports: dict from load_skill_reports().
@@ -229,7 +247,25 @@ def calc_component_scores(reports):
         'description': CONVICTION_COMPONENTS['setup_availability']['description'],
     }
 
-    # 7. signal_convergence
+    # 7. growth_outlook
+    growth = reports.get('kr-growth-outlook', {})
+    go_score = normalize_signal(growth.get('composite'), 'kr-growth-outlook')
+    components['growth_outlook'] = {
+        'score': round(go_score, 1),
+        'sources_used': ['kr-growth-outlook'] if growth else [],
+        'description': CONVICTION_COMPONENTS['growth_outlook']['description'],
+    }
+
+    # 8. global_monetary
+    monetary = reports.get('us-monetary-regime', {})
+    gm_score = normalize_signal(monetary.get('regime_score'), 'us-monetary-regime')
+    components['global_monetary'] = {
+        'score': round(gm_score, 1),
+        'sources_used': ['us-monetary-regime'] if monetary else [],
+        'description': CONVICTION_COMPONENTS['global_monetary']['description'],
+    }
+
+    # 9. signal_convergence
     other_scores = [c['score'] for name, c in components.items()
                     if name != 'signal_convergence']
     if other_scores:

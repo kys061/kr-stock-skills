@@ -31,21 +31,23 @@ from report_generator import StrategySynthesizerReportGenerator
 class TestConstants:
     """상수 정의 검증."""
 
-    def test_conviction_7_components(self):
-        assert len(CONVICTION_COMPONENTS) == 7
+    def test_conviction_9_components(self):
+        assert len(CONVICTION_COMPONENTS) == 9
 
     def test_conviction_weights_sum_1(self):
         total = sum(c['weight'] for c in CONVICTION_COMPONENTS.values())
         assert abs(total - 1.0) < 0.001
 
     def test_conviction_weights_match_design(self):
-        assert CONVICTION_COMPONENTS['market_structure']['weight'] == 0.18
-        assert CONVICTION_COMPONENTS['distribution_risk']['weight'] == 0.18
-        assert CONVICTION_COMPONENTS['bottom_confirmation']['weight'] == 0.12
-        assert CONVICTION_COMPONENTS['macro_alignment']['weight'] == 0.18
-        assert CONVICTION_COMPONENTS['theme_quality']['weight'] == 0.12
-        assert CONVICTION_COMPONENTS['setup_availability']['weight'] == 0.10
-        assert CONVICTION_COMPONENTS['signal_convergence']['weight'] == 0.12
+        assert CONVICTION_COMPONENTS['market_structure']['weight'] == 0.15
+        assert CONVICTION_COMPONENTS['distribution_risk']['weight'] == 0.14
+        assert CONVICTION_COMPONENTS['bottom_confirmation']['weight'] == 0.09
+        assert CONVICTION_COMPONENTS['macro_alignment']['weight'] == 0.14
+        assert CONVICTION_COMPONENTS['theme_quality']['weight'] == 0.09
+        assert CONVICTION_COMPONENTS['setup_availability']['weight'] == 0.08
+        assert CONVICTION_COMPONENTS['signal_convergence']['weight'] == 0.11
+        assert CONVICTION_COMPONENTS['growth_outlook']['weight'] == 0.10
+        assert CONVICTION_COMPONENTS['global_monetary']['weight'] == 0.10
 
     def test_conviction_5_zones(self):
         assert len(CONVICTION_ZONES) == 5
@@ -186,10 +188,10 @@ class TestComponentScores:
             'kr-canslim-screener': {'canslim_candidates': ['C', 'D', 'E']},
         }
 
-    def test_returns_7_components(self):
+    def test_returns_9_components(self):
         reports = self._make_reports()
         components = calc_component_scores(reports)
-        assert len(components) == 7
+        assert len(components) == 9
 
     def test_all_scores_in_range(self):
         reports = self._make_reports()

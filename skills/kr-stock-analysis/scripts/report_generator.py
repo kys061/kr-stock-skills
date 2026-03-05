@@ -11,6 +11,7 @@ class StockAnalysisReportGenerator:
         self._technical = None
         self._supply_demand = None
         self._comprehensive = None
+        self._growth = None
 
     def add_fundamental(self, data):
         """펀더멘털 분석 결과 추가."""
@@ -27,6 +28,10 @@ class StockAnalysisReportGenerator:
     def add_comprehensive(self, data):
         """종합 분석 결과 추가."""
         self._comprehensive = data
+
+    def add_growth(self, data):
+        """성장성 분석 결과 추가."""
+        self._growth = data
 
     def generate(self):
         """리포트 생성."""
@@ -106,6 +111,14 @@ class StockAnalysisReportGenerator:
                 inv_score = inv_data.get('score', '-')
                 flow_str = ', '.join(f'{p}일: {v:+,}' for p, v in sorted(flows.items()))
                 lines.append(f'  {investor}: score={inv_score} ({flow_str})')
+            lines.append('')
+
+        if self._growth:
+            g = self._growth
+            lines.append(f'## 성장성 (점수: {g["score"]:.1f}, 등급: {g.get("grade", "-")})')
+            for comp_name, comp_data in g.get('components', {}).items():
+                c_score = comp_data.get('score', '-')
+                lines.append(f'  {comp_name}: {c_score}')
             lines.append('')
 
         return '\n'.join(lines)
