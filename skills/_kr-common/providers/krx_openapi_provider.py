@@ -6,12 +6,20 @@ KRX 정보데이터시스템 공식 REST API (https://openapi.krx.co.kr).
 Base URL: https://data-dbg.krx.co.kr/svc/apis
 인증: AUTH_KEY 헤더
 
-주요 엔드포인트:
-  - /sto/stk_bydd_trd      : 주식 일별 시세
-  - /sto/stk_isu_base_info  : 주식 종목 기본정보
-  - /sto/stk_invst_trd      : 투자자별 매매동향
-  - /idx/kospi_dd_trd       : KOSPI 일별 시세
-  - /idx/kosdaq_dd_trd      : KOSDAQ 일별 시세
+승인 완료 엔드포인트 (2026-03-06 확인):
+  - /sto/stk_bydd_trd      : 주식 일별 시세 (OHLCV, 시가총액)
+  - /sto/stk_isu_base_info  : 종목 상장 기본정보 (종목코드, 상장일, 액면가)
+  - /idx/kospi_dd_trd       : KOSPI 지수 일별 시세
+  - /idx/kosdaq_dd_trd      : KOSDAQ 지수 일별 시세
+
+미제공/미승인:
+  - 투자자별 매매동향: 엔드포인트 미존재 (404)
+  - PER/PBR: stk_isu_base_info에 미포함 → yfinance/PyKRX 폴백 필요
+  - 채권/선물: 엔드포인트 존재하나 미승인 (401)
+
+컬럼명 주의:
+  - stk_bydd_trd: ISU_CD (6자리, e.g. '078600')
+  - stk_isu_base_info: ISU_SRT_CD (6자리), ISU_CD (ISIN, e.g. 'KR7078600005')
 """
 
 import logging
@@ -27,14 +35,13 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://data-dbg.krx.co.kr/svc/apis"
 
 ENDPOINTS = {
-    # 주식
-    "stk_bydd_trd": f"{BASE_URL}/sto/stk_bydd_trd",          # 주식 일별시세
-    "stk_isu_base_info": f"{BASE_URL}/sto/stk_isu_base_info",  # 종목기본정보
-    "stk_invst_trd": f"{BASE_URL}/sto/stk_invst_trd",        # 투자자별 매매동향
-    # 지수
-    "kospi_dd_trd": f"{BASE_URL}/idx/kospi_dd_trd",           # KOSPI 일별시세
-    "kosdaq_dd_trd": f"{BASE_URL}/idx/kosdaq_dd_trd",         # KOSDAQ 일별시세
-    "krx100_dd_trd": f"{BASE_URL}/idx/krx100_dd_trd",         # KRX100 일별시세
+    # 주식 (승인 완료)
+    "stk_bydd_trd": f"{BASE_URL}/sto/stk_bydd_trd",            # KOSPI 주식 일별시세
+    "ksq_bydd_trd": f"{BASE_URL}/sto/ksq_bydd_trd",            # KOSDAQ 주식 일별시세
+    "stk_isu_base_info": f"{BASE_URL}/sto/stk_isu_base_info",  # 종목 상장정보
+    # 지수 (승인 완료)
+    "kospi_dd_trd": f"{BASE_URL}/idx/kospi_dd_trd",             # KOSPI 지수 일별시세
+    "kosdaq_dd_trd": f"{BASE_URL}/idx/kosdaq_dd_trd",           # KOSDAQ 지수 일별시세
 }
 
 
@@ -105,20 +112,36 @@ class KRXOpenAPIProvider:
     # 주식 시세
     # ─────────────────────────────────────────
 
-    def get_stock_daily(self, date: str) -> pd.DataFrame:
-        """전종목 일별 시세 (특정일).
+    def get_stock_daily(self, date: str, market: str = None) -> pd.DataFrame:
+        """전종목 일별 시세 (특정일). KOSPI + KOSDAQ 통합.
+
+        Args:
+            date: 'YYYY-MM-DD' 형식
+            market: 'KOSPI', 'KOSDAQ', None(양쪽 통합)
 
         Returns DataFrame with columns:
-            ISU_SRT_CD, ISU_ABBRV, MKT_NM, SECT_TP_NM,
-            TDD_CLSPRC, FLUC_TP_CD, CMPPREVDD_PRC, FLUC_RT,
+            BAS_DD, ISU_CD (6자리), ISU_NM, MKT_NM, SECT_TP_NM,
+            TDD_CLSPRC, CMPPREVDD_PRC, FLUC_RT,
             TDD_OPNPRC, TDD_HGPRC, TDD_LWPRC, ACC_TRDVOL, ACC_TRDVAL,
             MKTCAP, LIST_SHRS
         """
-        records = self._request("stk_bydd_trd", {"basDd": self._to_krx(date)})
-        if not records:
+        krx_date = self._to_krx(date)
+        frames = []
+
+        if market in (None, 'KOSPI'):
+            kospi = self._request("stk_bydd_trd", {"basDd": krx_date})
+            if kospi:
+                frames.append(pd.DataFrame(kospi))
+
+        if market in (None, 'KOSDAQ'):
+            kosdaq = self._request("ksq_bydd_trd", {"basDd": krx_date})
+            if kosdaq:
+                frames.append(pd.DataFrame(kosdaq))
+
+        if not frames:
             return pd.DataFrame()
 
-        df = pd.DataFrame(records)
+        df = pd.concat(frames, ignore_index=True)
         # 숫자 컬럼 변환
         numeric_cols = [
             "TDD_CLSPRC", "CMPPREVDD_PRC", "TDD_OPNPRC", "TDD_HGPRC",
@@ -137,18 +160,21 @@ class KRXOpenAPIProvider:
         return df
 
     def get_stock_base_info(self, date: str) -> pd.DataFrame:
-        """전종목 기본정보 (PER/PBR/EPS/BPS 등).
+        """전종목 상장 기본정보.
+
+        NOTE: PER/PBR/EPS는 미포함. 상장정보(종목코드, 상장일, 액면가)만 반환.
+              PER/PBR은 yfinance 또는 PyKRX 폴백 필요.
 
         Returns DataFrame with columns:
-            ISU_SRT_CD, ISU_ABBRV, MKT_NM, SECT_TP_NM,
-            PER, PBR, EPS, BPS, DIV, DPS
+            ISU_CD (ISIN), ISU_SRT_CD (6자리), ISU_NM, ISU_ABBRV,
+            LIST_DD, MKT_TP_NM, PARVAL, LIST_SHRS
         """
         records = self._request("stk_isu_base_info", {"basDd": self._to_krx(date)})
         if not records:
             return pd.DataFrame()
 
         df = pd.DataFrame(records)
-        numeric_cols = ["PER", "PBR", "EPS", "BPS", "DIV", "DPS"]
+        numeric_cols = ["PARVAL", "LIST_SHRS"]
         for col in numeric_cols:
             if col in df.columns:
                 df[col] = pd.to_numeric(
@@ -156,25 +182,9 @@ class KRXOpenAPIProvider:
                 )
         return df
 
-    def get_investor_trading(self, date: str) -> pd.DataFrame:
-        """전종목 투자자별 매매동향 (특정일).
-
-        Returns DataFrame with columns:
-            ISU_SRT_CD, ISU_ABBRV,
-            TRDVAL1~9 (거래대금: 금융투자/보험/투신/사모/은행/기타금융/연기금/기타법인/개인/외국인/기타외국인)
-        """
-        records = self._request("stk_invst_trd", {"basDd": self._to_krx(date)})
-        if not records:
-            return pd.DataFrame()
-
-        df = pd.DataFrame(records)
-        # 숫자 컬럼 자동 변환 (TRDVAL, TRDVOL 패턴)
-        for col in df.columns:
-            if col.startswith(("TRDVAL", "TRDVOL", "NETBID")):
-                df[col] = pd.to_numeric(
-                    df[col].astype(str).str.replace(",", ""), errors="coerce"
-                )
-        return df
+    # NOTE: 투자자별 매매동향 엔드포인트 미존재 (404, 2026-03-06 확인)
+    # PER/PBR 데이터도 KRX Open API에 미포함
+    # → yfinance 또는 PyKRX 폴백 사용
 
     # ─────────────────────────────────────────
     # 지수
@@ -201,20 +211,21 @@ class KRXOpenAPIProvider:
     def get_stock_by_ticker(self, date: str, ticker: str) -> Optional[dict]:
         """특정 종목의 일별 시세 조회.
 
-        전종목 데이터에서 ticker로 필터링.
+        전종목 데이터에서 ticker(6자리)로 필터링.
+        stk_bydd_trd의 컬럼: ISU_CD (6자리), ISU_NM
         """
         df = self.get_stock_daily(date)
         if df.empty:
             return None
 
-        row = df[df["ISU_SRT_CD"] == ticker]
+        row = df[df["ISU_CD"] == ticker]
         if row.empty:
             return None
 
         r = row.iloc[0]
         return {
             "ticker": ticker,
-            "name": r.get("ISU_ABBRV", ""),
+            "name": r.get("ISU_NM", ""),
             "close": int(r.get("TDD_CLSPRC", 0)),
             "open": int(r.get("TDD_OPNPRC", 0)),
             "high": int(r.get("TDD_HGPRC", 0)),
@@ -227,8 +238,11 @@ class KRXOpenAPIProvider:
             "date": date,
         }
 
-    def get_fundamentals_by_ticker(self, date: str, ticker: str) -> Optional[dict]:
-        """특정 종목의 밸류에이션 지표."""
+    def get_listing_info_by_ticker(self, ticker: str, date: str) -> Optional[dict]:
+        """특정 종목의 상장 기본정보 (종목코드, 상장일, 액면가).
+
+        NOTE: PER/PBR 미포함. stk_isu_base_info의 ISU_SRT_CD(6자리)로 필터링.
+        """
         df = self.get_stock_base_info(date)
         if df.empty:
             return None
@@ -241,12 +255,11 @@ class KRXOpenAPIProvider:
         return {
             "ticker": ticker,
             "name": r.get("ISU_ABBRV", ""),
-            "per": float(r.get("PER", 0)),
-            "pbr": float(r.get("PBR", 0)),
-            "eps": float(r.get("EPS", 0)),
-            "bps": float(r.get("BPS", 0)),
-            "div_yield": float(r.get("DIV", 0)),
-            "dps": float(r.get("DPS", 0)),
+            "isin": r.get("ISU_CD", ""),
+            "list_date": r.get("LIST_DD", ""),
+            "market": r.get("MKT_TP_NM", ""),
+            "par_value": int(r.get("PARVAL", 0)),
+            "listed_shares": int(r.get("LIST_SHRS", 0)),
         }
 
     def test_connection(self) -> dict:
