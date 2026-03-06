@@ -2,8 +2,11 @@
 
 한국 주식 시장(KOSPI/KOSDAQ) 분석을 위한 Claude Code 플러그인. 46개 전문 스킬로 시장 분석, 종목 스크리닝, 전략 수립, 포트폴리오 관리까지 워크플로우를 제공합니다.
 
-> **Tier 1**: 증권 계좌 없이 즉시 사용 가능 (PyKRX + FinanceDataReader + OpenDartReader)
-> **Tier 2**: 한국투자증권 Open API 연동 (선택)
+> **Tier 0**: KRX Open API (인증키 기반, 일 10,000회)
+> **Tier 1**: yfinance — 무료, 무제한, OHLCV+재무+밸류에이션 (즉시 가용)
+> **Tier 2**: PyKRX + FinanceDataReader + OpenDartReader (KRX 차단 시 불가)
+> **Tier 3**: 한국투자증권 Open API 연동 (선택)
+> **Tier 4**: WebSearch 폴백 (항상 가용)
 
 ---
 
@@ -21,7 +24,7 @@ Claude Code 프롬프트에서 직접 설치:
 설치 후 Python 의존성 설치:
 
 ```bash
-pip install pykrx finance-datareader opendartreader pandas numpy
+pip install pykrx finance-datareader opendartreader pandas numpy yfinance
 ```
 
 ### Method 2: Git Clone
