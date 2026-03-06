@@ -1,5 +1,6 @@
 """한국 주식 시장 통합 데이터 클라이언트.
 
+Tier 0 (최우선): KRX Open API (인증키 기반, 일 10,000회)
 Tier 1 (계좌 불필요): PyKRX + FinanceDataReader + OpenDartReader
 Tier 2 (선택): 한국투자증권 Open API (실시간/분봉/주문)
 
@@ -13,6 +14,7 @@ import logging
 import pandas as pd
 
 from .config import KRConfig, get_config
+from .providers.krx_openapi_provider import KRXOpenAPIProvider, KRXOpenAPIError
 from .providers.pykrx_provider import PyKRXProvider
 from .providers.fdr_provider import FDRProvider
 from .providers.dart_provider import DARTProvider
@@ -56,6 +58,10 @@ class KRClient:
             self._config.cache_dir = cache_dir
 
         # 프로바이더 초기화
+        self._krx_api = KRXOpenAPIProvider(
+            api_key=self._config.krx_api_key,
+            request_delay=self._config.request_delay,
+        ) if self._config.krx_available else None
         self._pykrx = PyKRXProvider(request_delay=self._config.request_delay)
         self._fdr = FDRProvider()
         self._dart = DARTProvider(api_key=self._config.dart_api_key)
@@ -64,7 +70,10 @@ class KRClient:
         # 캐시
         self._cache = FileCache(self._config.cache_dir) if self._config.cache_enabled else None
 
-        logger.info(f"KRClient initialized (Tier {self._config.tier})")
+        tier_label = f"Tier {self._config.tier}"
+        if self._krx_api:
+            tier_label += " (KRX Open API active)"
+        logger.info(f"KRClient initialized ({tier_label})")
 
     @property
     def tier(self) -> int:
@@ -102,8 +111,18 @@ class KRClient:
         ticker = self._resolve(ticker)
         date = self._recent_day()
 
+        # Tier 0: KRX Open API (최우선)
+        if self._krx_api:
+            try:
+                result = self._krx_api.get_stock_by_ticker(date, ticker)
+                if result:
+                    logger.info(f"KRX Open API: get_price({ticker}) OK")
+                    return result
+            except KRXOpenAPIError as e:
+                logger.warning(f"KRX Open API failed, falling back to PyKRX: {e}")
+
+        # Tier 1: PyKRX 폴백
         try:
-            # PyKRX로 조회
             ohlcv = self._pykrx.get_market_ohlcv_by_date(date, date, ticker)
             cap = self._pykrx.get_market_cap_by_date(date, date, ticker)
 
@@ -191,6 +210,18 @@ class KRClient:
     def get_fundamentals_market(self, date: str,
                                 market: str = 'KOSPI') -> pd.DataFrame:
         """전체 시장 밸류에이션 스냅샷."""
+        # Tier 0: KRX Open API
+        if self._krx_api:
+            try:
+                df = self._krx_api.get_stock_base_info(date)
+                if not df.empty:
+                    if market != 'ALL' and 'MKT_NM' in df.columns:
+                        df = df[df['MKT_NM'].str.contains(market, na=False)]
+                    logger.info(f"KRX Open API: get_fundamentals_market({date}) OK")
+                    return df
+            except KRXOpenAPIError as e:
+                logger.warning(f"KRX Open API failed: {e}")
+
         try:
             return self._pykrx.get_market_fundamental_by_ticker(date, market=market)
         except Exception as e:
@@ -238,6 +269,16 @@ class KRClient:
         """재무비율 요약."""
         ticker = self._resolve(ticker)
         date = self._recent_day()
+
+        # Tier 0: KRX Open API
+        if self._krx_api:
+            try:
+                result = self._krx_api.get_fundamentals_by_ticker(date, ticker)
+                if result:
+                    logger.info(f"KRX Open API: get_financial_ratios({ticker}) OK")
+                    return result
+            except KRXOpenAPIError as e:
+                logger.warning(f"KRX Open API failed: {e}")
 
         try:
             fund = self._pykrx.get_market_fundamental_by_date(date, date, ticker)

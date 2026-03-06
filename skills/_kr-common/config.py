@@ -18,9 +18,13 @@ except ImportError:
 class KRConfig:
     """환경 설정.
 
+    Tier 0: KRX Open API (인증키 기반, 일 10,000회)
     Tier 1: PyKRX + FinanceDataReader + OpenDartReader (계좌 불필요)
     Tier 2: 한국투자증권 Open API (선택)
     """
+
+    # Tier 0: KRX Open API
+    krx_api_key: str = field(default_factory=lambda: os.getenv('KRX_API_KEY', ''))
 
     # Tier 1
     dart_api_key: str = field(default_factory=lambda: os.getenv('DART_API_KEY', ''))
@@ -43,6 +47,10 @@ class KRConfig:
     max_retries: int = 3        # 실패 시 재시도 횟수
 
     @property
+    def krx_available(self) -> bool:
+        return bool(self.krx_api_key)
+
+    @property
     def dart_available(self) -> bool:
         return bool(self.dart_api_key)
 
@@ -52,7 +60,9 @@ class KRConfig:
 
     @property
     def tier(self) -> int:
-        """현재 사용 가능한 Tier."""
+        """현재 사용 가능한 최상위 Tier."""
+        if self.krx_available:
+            return 0
         return 2 if self.kis_available else 1
 
 

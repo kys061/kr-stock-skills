@@ -22,7 +22,7 @@ class TestKRClientImport(unittest.TestCase):
         from _kr_common.kr_client import KRClient
         client = KRClient()
         self.assertIsNotNone(client)
-        self.assertEqual(client.tier, 1)  # Tier 2 환경변수 없으므로
+        self.assertIn(client.tier, [0, 1])  # KRX API 키 있으면 0, 없으면 1
 
     def test_import_config(self):
         from _kr_common.config import KRConfig, get_config
