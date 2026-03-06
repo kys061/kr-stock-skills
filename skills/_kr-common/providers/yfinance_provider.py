@@ -179,13 +179,32 @@ class YFinanceProvider:
     # ─────────────────────────────────────────
 
     def _get_ticker(self, ticker: str, market: str = None) -> Optional['yf.Ticker']:
-        """yf.Ticker 인스턴스 반환."""
+        """yf.Ticker 인스턴스 반환. 지정 시장 실패 시 반대쪽도 시도."""
         if '.' in ticker:
-            return yf.Ticker(ticker)
+            t = yf.Ticker(ticker)
+            try:
+                if not t.history(period='1d').empty:
+                    return t
+            except Exception:
+                pass
+            # .KQ 실패 → .KS, .KS 실패 → .KQ
+            alt = ticker.replace('.KQ', '.KS') if '.KQ' in ticker else ticker.replace('.KS', '.KQ')
+            if alt != ticker:
+                logger.info(f"yfinance fallback: {ticker} → {alt}")
+                return yf.Ticker(alt)
+            return t
 
         if market:
             yf_sym = self._to_yf_ticker(ticker, market)
-            return yf.Ticker(yf_sym)
+            t = yf.Ticker(yf_sym)
+            try:
+                if not t.history(period='1d').empty:
+                    return t
+            except Exception:
+                pass
+            # 지정 시장 실패 → 반대쪽 시도
+            logger.info(f"yfinance: {yf_sym} empty, trying other market")
+            return self._try_both_markets(ticker)
 
         # 시장 미지정 → 양쪽 시도
         return self._try_both_markets(ticker)
