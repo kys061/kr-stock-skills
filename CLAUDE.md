@@ -25,9 +25,16 @@
 
 ### 4. 스킬 설치 동기화 (Deploy)
 
-스킬 파일(SKILL.md, scripts/, references/, tests/) 변경 시 **반드시** 아래 절차를 수행한다:
+스킬 파일(SKILL.md, scripts/, references/, tests/) **또는 공통 모듈(`_kr-common/`)** 변경 시 **반드시** 아래 절차를 수행한다:
 
-#### 4-1. 개별 스킬 동기화 (`~/.claude/skills/`)
+#### 4-1. 동기화 대상 범위
+| 변경 대상 | 동기화 방법 | 비고 |
+|-----------|-----------|------|
+| 개별 스킬 (SKILL.md, scripts/) | `cp -r` 또는 `install.sh` | 해당 스킬만 |
+| **`_kr-common/` (kr_client.py, providers/, utils/, config.py)** | **반드시 `install.sh` 실행** | **전 스킬이 import하는 공통 모듈** |
+| install.sh, README.md | 해당 없음 (소스 직접 참조) | |
+
+#### 4-2. 개별 스킬 동기화 (`~/.claude/skills/`)
 ```bash
 # 변경된 스킬만 동기화
 cp -r skills/{skill_name}/ ~/.claude/skills/{skill_name}/
@@ -38,24 +45,29 @@ for s in {skill_1} {skill_2} {skill_3}; do
 done
 ```
 
-#### 4-2. 전체 재설치 (대규모 변경 시)
+#### 4-3. 전체 재설치 (공통 모듈 변경 시 필수)
 ```bash
 ./install.sh
 ```
+> **`_kr-common/` 변경 시 반드시 `install.sh` 실행**. `~/.claude/skills/_kr-common/`이 구버전이면 모든 스킬이 구버전 코드로 동작한다.
 
-#### 4-3. 동기화 검증
-변경 후 `diff`로 소스와 설치본이 일치하는지 확인한다:
+#### 4-4. 동기화 검증
 ```bash
+# 개별 스킬 검증
 diff <(cat skills/{skill_name}/SKILL.md) <(cat ~/.claude/skills/{skill_name}/SKILL.md)
+
+# 공통 모듈 검증 (핵심 파일)
+diff skills/_kr-common/kr_client.py ~/.claude/skills/_kr-common/kr_client.py
+diff skills/_kr-common/providers/ ~/.claude/skills/_kr-common/providers/ -r
 ```
 
-#### 4-4. install.sh 업데이트
+#### 4-5. install.sh 업데이트
 스킬 추가/삭제 시 `install.sh` 헤더의 스킬 수를 반드시 업데이트한다:
 ```bash
 # install.sh 내 "N skills for KOSPI/KOSDAQ analysis" 숫자 변경
 ```
 
-> **주의**: `~/.claude/skills/` 동기화를 빠뜨리면 Claude Code가 구버전 SKILL.md를 참조하여 잘못된 분석을 수행할 수 있다. 스크립트/상수 변경 시 SKILL.md도 함께 업데이트하고 동기화해야 한다.
+> **주의**: `~/.claude/skills/` 동기화를 빠뜨리면 Claude Code가 구버전 코드를 참조하여 잘못된 분석을 수행할 수 있다. 특히 `_kr-common/`의 프로바이더(yfinance, KRX API 등)나 `kr_client.py` 폴백 로직 변경 시 동기화 누락은 데이터 소스 폴백이 동작하지 않는 원인이 된다.
 
 ### 5. 데이터 소스 우선순위 (Fallback Policy)
 
