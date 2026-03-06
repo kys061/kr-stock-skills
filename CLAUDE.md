@@ -63,13 +63,15 @@ diff <(cat skills/{skill_name}/SKILL.md) <(cat ~/.claude/skills/{skill_name}/SKI
 
 ```
 Tier 0: KRX Open API (인증키 기반, 일 10,000회)  ← 키 발급 완료, 개별 서비스 승인 대기
-Tier 1: KIS Open API (한국투자증권, 계좌 기반)
+Tier 1: yfinance (무료, 무제한, OHLCV+재무+밸류에이션)  ← 통합 완료, 즉시 가용
 Tier 2: KRClient (pykrx/FDR) — KRX 차단 시 사용 불가
-Tier 3: WebSearch 폴백 (항상 가용)
+Tier 3: KIS Open API (한국투자증권, 계좌 기반)
+Tier 4: WebSearch 폴백 (항상 가용)
 ```
 - KRX API Key: `.env`에 `KRX_API_KEY` 설정 완료
-- Provider: `_kr-common/providers/krx_openapi_provider.py`
-- 통합: `kr_client.py`에서 Tier 0 우선 사용, 401 시 PyKRX 폴백
+- yfinance Provider: `_kr-common/providers/yfinance_provider.py` (KOSPI→.KS, KOSDAQ→.KQ)
+- KRX Provider: `_kr-common/providers/krx_openapi_provider.py`
+- 통합: `kr_client.py`에서 Tier 0 → Tier 1(yfinance) → Tier 2(PyKRX/FDR) 순 폴백
 
 #### 5-1. WebSearch 폴백 규칙
 Tier 0-2가 모두 실패(401/403/에러/미설정)할 경우 **WebSearch로 데이터를 수집**하여 분석을 계속한다:

@@ -1,8 +1,9 @@
 """한국 주식 시장 통합 데이터 클라이언트.
 
 Tier 0 (최우선): KRX Open API (인증키 기반, 일 10,000회)
-Tier 1 (계좌 불필요): PyKRX + FinanceDataReader + OpenDartReader
-Tier 2 (선택): 한국투자증권 Open API (실시간/분봉/주문)
+Tier 1 (무료): yfinance (Yahoo Finance, OHLCV+재무+밸류에이션)
+Tier 2 (계좌 불필요): PyKRX + FinanceDataReader + OpenDartReader
+Tier 3 (선택): 한국투자증권 Open API (실시간/분봉/주문)
 
 Usage:
     from kr_client import KRClient
@@ -15,6 +16,7 @@ import pandas as pd
 
 from .config import KRConfig, get_config
 from .providers.krx_openapi_provider import KRXOpenAPIProvider, KRXOpenAPIError
+from .providers.yfinance_provider import YFinanceProvider, YFinanceError
 from .providers.pykrx_provider import PyKRXProvider
 from .providers.fdr_provider import FDRProvider
 from .providers.dart_provider import DARTProvider
@@ -62,6 +64,12 @@ class KRClient:
             api_key=self._config.krx_api_key,
             request_delay=self._config.request_delay,
         ) if self._config.krx_available else None
+
+        try:
+            self._yfinance = YFinanceProvider()
+        except YFinanceError:
+            self._yfinance = None
+
         self._pykrx = PyKRXProvider(request_delay=self._config.request_delay)
         self._fdr = FDRProvider()
         self._dart = DARTProvider(api_key=self._config.dart_api_key)
@@ -70,10 +78,13 @@ class KRClient:
         # 캐시
         self._cache = FileCache(self._config.cache_dir) if self._config.cache_enabled else None
 
-        tier_label = f"Tier {self._config.tier}"
+        providers = []
         if self._krx_api:
-            tier_label += " (KRX Open API active)"
-        logger.info(f"KRClient initialized ({tier_label})")
+            providers.append("KRX-API")
+        if self._yfinance:
+            providers.append("yfinance")
+        providers.append("PyKRX/FDR")
+        logger.info(f"KRClient initialized (Tier {self._config.tier}, providers: {'+'.join(providers)})")
 
     @property
     def tier(self) -> int:
@@ -121,7 +132,18 @@ class KRClient:
             except KRXOpenAPIError as e:
                 logger.warning(f"KRX Open API failed, falling back to PyKRX: {e}")
 
-        # Tier 1: PyKRX 폴백
+        # Tier 1: yfinance 폴백
+        if self._yfinance:
+            try:
+                market = ticker_utils.get_market(ticker)
+                result = self._yfinance.get_price(ticker, market=market)
+                if result and result.get('close'):
+                    logger.info(f"yfinance: get_price({ticker}) OK")
+                    return result
+            except Exception as e:
+                logger.warning(f"yfinance get_price failed: {e}")
+
+        # Tier 2: PyKRX 폴백
         try:
             ohlcv = self._pykrx.get_market_ohlcv_by_date(date, date, ticker)
             cap = self._pykrx.get_market_cap_by_date(date, date, ticker)
@@ -162,6 +184,18 @@ class KRClient:
         cache_key = f"ohlcv_{ticker}_{start}_{end}_{freq}"
 
         def _fetch():
+            # Tier 1: yfinance (무료, 무제한)
+            if self._yfinance:
+                try:
+                    market = ticker_utils.get_market(ticker)
+                    df = self._yfinance.get_ohlcv(ticker, start, end, market=market)
+                    if not df.empty:
+                        logger.info(f"yfinance: get_ohlcv({ticker}) OK, {len(df)} rows")
+                        return df
+                except Exception as e:
+                    logger.warning(f"yfinance OHLCV failed: {e}")
+
+            # Tier 2: PyKRX
             try:
                 df = self._pykrx.get_market_ohlcv_by_date(start, end, ticker, freq=freq)
                 if not df.empty:
@@ -169,7 +203,7 @@ class KRClient:
             except Exception as e:
                 logger.warning(f"PyKRX OHLCV failed, trying FDR: {e}")
 
-            # FDR 폴백
+            # Tier 2: FDR 폴백
             try:
                 df = self._fdr.get_data(ticker, start, end)
                 if not df.empty:
@@ -261,8 +295,18 @@ class KRClient:
             if result:
                 return result
 
-        # DART 불가 시 PyKRX 부분 데이터로 폴백
-        logger.info("DART unavailable, returning partial fundamentals from PyKRX")
+        # yfinance 폴백 (재무제표)
+        if self._yfinance:
+            try:
+                market = ticker_utils.get_market(ticker)
+                result = self._yfinance.get_financials(ticker, market=market)
+                if result:
+                    logger.info(f"yfinance: get_financial_statements({ticker}) OK")
+                    return result
+            except Exception as e:
+                logger.warning(f"yfinance get_financials failed: {e}")
+
+        logger.info("DART/yfinance unavailable, returning None")
         return None
 
     def get_financial_ratios(self, ticker: str) -> dict:
@@ -280,6 +324,18 @@ class KRClient:
             except KRXOpenAPIError as e:
                 logger.warning(f"KRX Open API failed: {e}")
 
+        # Tier 1: yfinance 폴백
+        if self._yfinance:
+            try:
+                market = ticker_utils.get_market(ticker)
+                result = self._yfinance.get_fundamentals(ticker, market=market)
+                if result and (result.get('per') or result.get('pbr')):
+                    logger.info(f"yfinance: get_financial_ratios({ticker}) OK")
+                    return result
+            except Exception as e:
+                logger.warning(f"yfinance get_financial_ratios failed: {e}")
+
+        # Tier 2: PyKRX 폴백
         try:
             fund = self._pykrx.get_market_fundamental_by_date(date, date, ticker)
             if fund.empty:

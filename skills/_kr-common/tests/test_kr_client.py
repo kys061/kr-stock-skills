@@ -167,10 +167,14 @@ class TestDARTFallback(unittest.TestCase):
     """DART 키 없을 때 graceful fallback."""
 
     def test_dart_unavailable(self):
+        """DART 불가 시 yfinance 폴백으로 재무제표 반환 가능."""
         from _kr_common.kr_client import KRClient
         client = KRClient(dart_api_key='')
         result = client.get_financial_statements('005930', 2025)
-        self.assertIsNone(result)
+        # yfinance 설치 시 폴백으로 데이터 반환
+        if result is not None:
+            self.assertIn('source', result)
+            self.assertEqual(result['source'], 'yfinance')
 
     def test_dart_disclosures_fallback(self):
         from _kr_common.kr_client import KRClient
