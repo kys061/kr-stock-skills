@@ -68,12 +68,13 @@ for skill_dir in "$REPO_DIR"/skills/*/; do
     skill_name=$(basename "$skill_dir")
     target="$SKILLS_DIR/$skill_name"
 
+    # 기존 디렉토리 제거 (심볼릭 링크는 건너뜀)
     if [ -d "$target" ] && [ ! -L "$target" ]; then
-        echo "  Backing up existing: $skill_name -> ${skill_name}.bak"
-        mv "$target" "${target}.bak"
+        rm -rf "$target"
+    elif [ -L "$target" ]; then
+        rm -f "$target"
     fi
 
-    rm -f "$target"
     cp -r "$skill_dir" "$target"
     echo "  Installed: $skill_name"
     INSTALLED=$((INSTALLED + 1))

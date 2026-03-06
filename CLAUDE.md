@@ -31,11 +31,18 @@
 
 > **원칙**: `README.md`는 외부 사용자가 보는 문서이므로, 내부 변경이 사용자에게 영향을 주는 경우(설치 방법, 의존성, 사용 가능한 스킬, 데이터 소스 등) 반드시 반영한다.
 
-### 3. Output Rule
+### 3. Output Rule (개발자 지침)
 
 모든 스킬 실행 결과는 마크다운 파일로 저장한다:
 - 경로: `reports/{skill_name}_{종목코드}_{종목명}_{YYYYMMDD}.md`
 - 종목 없는 분석: `reports/{skill_name}_market_{YYYYMMDD}.md`
+- **리포트 템플릿**: `_kr-common/templates/` 에서 관리 (사용자에게 배포됨)
+  - `report_rules.md` — 공통 포맷팅 규칙
+  - `report_stock.md` — 개별 종목 분석 (Type A)
+  - `report_screener.md` — 스크리닝 (Type B)
+  - `report_macro.md` — 매크로/전략 (Type C)
+- 새 스킬 추가 시 SKILL.md의 Output Rule에서 적절한 템플릿을 참조하도록 작성
+- 템플릿 수정 시 `install.sh` 실행 필수 (`_kr-common/` 변경이므로)
 
 ### 4. 스킬 설치 동기화 (Deploy)
 
