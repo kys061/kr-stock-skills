@@ -21,7 +21,7 @@ US `theme-detector` (FINVIZ 기반)를 한국 시장에 맞게 포팅.
 
 | US 원본 | KR 버전 |
 |---------|---------|
-| FINVIZ ~145 industries | **KRX 업종 + 커스텀 테마 14개** (kr_themes.yaml) |
+| FINVIZ ~145 industries | **KRX 업종 + 커스텀 테마 15개** (kr_themes.yaml) |
 | FINVIZ price/volume | **KRClient (PyKRX)** OHLCV/시총/거래량 |
 | FMP API P/E | **KRClient** PER/PBR |
 | Uptrend Dashboard | **자체 업트렌드 비율 계산** |

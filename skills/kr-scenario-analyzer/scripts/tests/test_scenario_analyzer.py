@@ -33,7 +33,7 @@ class TestConstants:
         assert IMPACT_ORDERS == ['1차 영향', '2차 영향', '3차 영향']
 
     def test_kr_sectors_count(self):
-        assert len(KR_SECTORS) == 14
+        assert len(KR_SECTORS) == 15
 
     def test_kr_event_types_count(self):
         assert len(KR_EVENT_TYPES) == 7

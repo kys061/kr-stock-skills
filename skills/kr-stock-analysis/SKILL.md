@@ -112,17 +112,17 @@ WebSearch 없이 즉시 계산 가능한 경량 성장성 점수:
 3. B방식 오버레이 계산: `(regime_score - 50) × 0.30 × sector_sensitivity`
 4. 종합 점수에 오버레이 가산: `final_score = base_score + overlay`
 
-### 14 섹터 민감도
+### 15 섹터 민감도
 
 | 섹터 | 민감도 | 섹터 | 민감도 |
 |------|:------:|------|:------:|
 | semiconductor | 1.3 | finance | 0.7 |
-| secondary_battery | 1.3 | insurance | 0.6 |
-| bio | 1.2 | retail | 0.5 |
-| it | 1.2 | defense | 0.4 |
-| auto | 1.1 | food | 0.3 |
-| shipbuilding | 1.0 | default | 0.7 |
-| steel | 0.9 | | |
+| secondary_battery | 1.3 | nuclear | 0.6 |
+| bio | 1.2 | insurance | 0.6 |
+| it | 1.2 | retail | 0.5 |
+| auto | 1.1 | defense | 0.4 |
+| shipbuilding | 1.0 | food | 0.3 |
+| steel | 0.9 | default | 0.7 |
 | chemical | 0.9 | | |
 | construction | 0.8 | | |
 

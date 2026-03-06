@@ -1,6 +1,6 @@
 ---
 name: kr-supply-demand-analyzer
-description: 시장/섹터 레벨 수급을 7단계 시그널(Strong Buy~Strong Sell)로 분류, 14 섹터별 HHI 집중도 분석. 거시적 수급 전문.
+description: 시장/섹터 레벨 수급을 7단계 시그널(Strong Buy~Strong Sell)로 분류, 15 섹터별 HHI 집중도 분석. 거시적 수급 전문.
 ---
 
 # kr-supply-demand-analyzer
@@ -57,7 +57,7 @@ PyKRX 기반 시장 전체 투자자 매매동향과 섹터별 자금 흐름을 
 | 팩터 수 | 4 (외국인/기관/일관성/거래량) | 4 (시장수급/섹터/유동성/심리) |
 | 시그널 | 5등급 | 7등급 (시장) + 5등급 (종합) |
 | 유동성 | 없음 | 거래대금/회전율/집중도 |
-| 섹터 분석 | 없음 | 14 섹터 HHI + 로테이션 |
+| 섹터 분석 | 없음 | 15 섹터 HHI + 로테이션 |
 
 ## 사용법
 

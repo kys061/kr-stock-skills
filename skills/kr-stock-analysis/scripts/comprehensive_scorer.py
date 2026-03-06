@@ -168,6 +168,7 @@ _SECTOR_SENSITIVITY = {
     'retail': 0.5,
     'defense': 0.4,
     'food': 0.3,
+    'nuclear': 0.6,
 }
 
 _DEFAULT_SENSITIVITY = 0.7

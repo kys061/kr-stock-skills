@@ -68,6 +68,7 @@ SECTOR_POLICY_DEFAULTS = {
     'chemical': 'neutral',
     'telecom': 'neutral',
     'utility': 'neutral',
+    'nuclear': 'strong_tailwind',
     'steel': 'moderate_headwind',
     'construction': 'moderate_headwind',
 }
@@ -77,7 +78,7 @@ SECTOR_TAM_CAGR = {
     'defense': 7, 'bio_health': 9, 'battery': 15,
     'power_equipment': 10, 'chemical': 3, 'steel': 2,
     'construction': 1, 'financial': 3, 'telecom': 2,
-    'utility': 1, 'entertainment': 8,
+    'utility': 1, 'entertainment': 8, 'nuclear': 8,
 }
 
 # --- Growth Quick grades ---

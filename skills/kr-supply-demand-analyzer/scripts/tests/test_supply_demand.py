@@ -77,7 +77,7 @@ class TestConstants:
         assert abs(total - 1.0) < 1e-10
 
     def test_kr_sectors_count(self):
-        assert len(KR_SECTORS) == 14
+        assert len(KR_SECTORS) == 15
 
     def test_kr_sectors_contents(self):
         assert '반도체' in KR_SECTORS
@@ -324,7 +324,8 @@ class TestSectorHHI:
     def test_equal_distribution(self):
         data = {sector: {'net': 100} for sector in KR_SECTORS}
         hhi = calc_sector_hhi(data)
-        expected = 14 * (1/14) ** 2  # 1/14 ≈ 0.0714
+        n = len(KR_SECTORS)
+        expected = n * (1/n) ** 2  # 1/n
         assert abs(hhi - round(expected, 4)) < 0.001
 
     def test_two_sector_split(self):

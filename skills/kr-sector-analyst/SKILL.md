@@ -134,7 +134,7 @@ Read references/kr_sector_rotation.md
 
 ## 섹터 성장 전망 (Growth Outlook)
 
-14개 섹터별 TAM/CAGR 기반 성장 등급:
+15개 섹터별 TAM/CAGR 기반 성장 등급:
 
 | 등급 | 섹터 | CAGR |
 |:----:|------|:----:|
@@ -142,7 +142,7 @@ Read references/kr_sector_rotation.md
 | A | 배터리, 전력기기, 바이오, 방산, 조선 | 7-15% |
 | B | 자동차, 엔터 | 4-8% |
 | C | 화학, 철강, 금융 | 2-3% |
-| D | 건설, 통신, 유틸리티 | 1-2% |
+| D | 건설, 통신, 유틸리티, 원전 | 1-2% |
 
 `scripts/sector_growth_scorer.py`로 프로그래밍 접근 가능.
 
@@ -163,17 +163,17 @@ Read references/kr_sector_rotation.md
 2. US Regime Score 산출 (stance×0.35 + rate×0.30 + liquidity×0.35)
 3. 각 섹터별 US 통화정책 민감도를 반영한 영향도 평가
 
-### 14 섹터 민감도
+### 15 섹터 민감도
 
 | 섹터 | 민감도 | 섹터 | 민감도 |
 |------|:------:|------|:------:|
 | semiconductor | 1.3 | finance | 0.7 |
-| secondary_battery | 1.3 | insurance | 0.6 |
-| bio | 1.2 | retail | 0.5 |
-| it | 1.2 | defense | 0.4 |
-| auto | 1.1 | food | 0.3 |
-| shipbuilding | 1.0 | default | 0.7 |
-| steel | 0.9 | | |
+| secondary_battery | 1.3 | nuclear | 0.6 |
+| bio | 1.2 | insurance | 0.6 |
+| it | 1.2 | retail | 0.5 |
+| auto | 1.1 | defense | 0.4 |
+| shipbuilding | 1.0 | food | 0.3 |
+| steel | 0.9 | default | 0.7 |
 | chemical | 0.9 | | |
 | construction | 0.8 | | |
 

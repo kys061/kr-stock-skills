@@ -49,8 +49,8 @@ class TestConstants:
         ]
         assert KR_WEEKLY_CHECKLIST == expected
 
-    def test_kr_sectors_14(self):
-        assert len(KR_SECTORS) == 14
+    def test_kr_sectors_15(self):
+        assert len(KR_SECTORS) == 15
 
     def test_kr_sectors_content(self):
         assert '반도체' in KR_SECTORS
@@ -164,7 +164,7 @@ class TestSectorScores:
         data = {s: {'momentum': 10, 'foreign_flow': 50, 'earnings_revision': 5, 'theme_score': 60}
                 for s in KR_SECTORS}
         scores = calc_sector_scores(data)
-        assert len(scores) == 14
+        assert len(scores) == 15
 
     def test_scores_in_range(self):
         data = {s: {'momentum': 10, 'foreign_flow': 50} for s in KR_SECTORS}
@@ -186,7 +186,7 @@ class TestSectorScores:
 
     def test_empty_data(self):
         scores = calc_sector_scores({})
-        assert len(scores) == 14
+        assert len(scores) == 15
         for s in scores.values():
             assert s['score'] >= 0
 

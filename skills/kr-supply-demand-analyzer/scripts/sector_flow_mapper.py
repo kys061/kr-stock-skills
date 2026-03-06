@@ -1,12 +1,12 @@
 """kr-supply-demand-analyzer: 섹터별 자금 흐름 분석."""
 
 
-# Phase 6/8과 동일한 14 섹터 (kr-weekly-strategy)
+# Phase 6/8과 동일한 15 섹터 (kr-weekly-strategy)
 KR_SECTORS = [
     '반도체', '자동차', '조선/해운', '철강/화학',
     '바이오/제약', '금융/은행', '유통/소비', '건설/부동산',
     'IT/소프트웨어', '통신', '에너지/유틸리티', '엔터테인먼트',
-    '방산', '2차전지',
+    '방산', '2차전지', '원전',
 ]
 
 SECTOR_FLOW_CONFIG = {
