@@ -24,7 +24,7 @@
 | 변경 사항 | README.md 업데이트 대상 |
 |-----------|----------------------|
 | 새 스킬 추가/삭제 | 스킬 수, Skills Reference 섹션에 스킬 설명 추가/제거 |
-| `_kr-common/` 공통 모듈 변경 (프로바이더 추가 등) | Tier 구조 설명, 설치 의존성(`pip install` 목록) |
+| `_kr_common/` 공통 모듈 변경 (프로바이더 추가 등) | Tier 구조 설명, 설치 의존성(`pip install` 목록) |
 | 데이터 소스 변경 (API 추가/제거) | Tier 구조 배지, Environment Variables 섹션 |
 | `install.sh` 변경 | Installation 섹션 |
 | 새 SKILL.md에 사용법 추가 | Skills Reference에 `/스킬명` 예시 추가 |
@@ -36,23 +36,23 @@
 모든 스킬 실행 결과는 마크다운 파일로 저장한다:
 - 경로: `reports/{skill_name}_{종목코드}_{종목명}_{YYYYMMDD}.md`
 - 종목 없는 분석: `reports/{skill_name}_market_{YYYYMMDD}.md`
-- **리포트 템플릿**: `_kr-common/templates/` 에서 관리 (사용자에게 배포됨)
+- **리포트 템플릿**: `_kr_common/templates/` 에서 관리 (사용자에게 배포됨)
   - `report_rules.md` — 공통 포맷팅 규칙
   - `report_stock.md` — 개별 종목 분석 (Type A)
   - `report_screener.md` — 스크리닝 (Type B)
   - `report_macro.md` — 매크로/전략 (Type C)
 - 새 스킬 추가 시 SKILL.md의 Output Rule에서 적절한 템플릿을 참조하도록 작성
-- 템플릿 수정 시 `install.sh` 실행 필수 (`_kr-common/` 변경이므로)
+- 템플릿 수정 시 `install.sh` 실행 필수 (`_kr_common/` 변경이므로)
 
 ### 4. 스킬 설치 동기화 (Deploy)
 
-스킬 파일(SKILL.md, scripts/, references/, tests/) **또는 공통 모듈(`_kr-common/`)** 변경 시 **반드시** 아래 절차를 수행한다:
+스킬 파일(SKILL.md, scripts/, references/, tests/) **또는 공통 모듈(`_kr_common/`)** 변경 시 **반드시** 아래 절차를 수행한다:
 
 #### 4-1. 동기화 대상 범위
 | 변경 대상 | 동기화 방법 | 비고 |
 |-----------|-----------|------|
 | 개별 스킬 (SKILL.md, scripts/) | `cp -r` 또는 `install.sh` | 해당 스킬만 |
-| **`_kr-common/` (kr_client.py, providers/, utils/, config.py)** | **반드시 `install.sh` 실행** | **전 스킬이 import하는 공통 모듈** |
+| **`_kr_common/` (kr_client.py, providers/, utils/, config.py)** | **반드시 `install.sh` 실행** | **전 스킬이 import하는 공통 모듈** |
 | install.sh, README.md | 해당 없음 (소스 직접 참조) | |
 
 #### 4-2. 개별 스킬 동기화 (`~/.claude/skills/`)
@@ -70,7 +70,7 @@ done
 ```bash
 ./install.sh
 ```
-> **`_kr-common/` 변경 시 반드시 `install.sh` 실행**. `~/.claude/skills/_kr-common/`이 구버전이면 모든 스킬이 구버전 코드로 동작한다.
+> **`_kr_common/` 변경 시 반드시 `install.sh` 실행**. `~/.claude/skills/_kr_common/`이 구버전이면 모든 스킬이 구버전 코드로 동작한다.
 
 #### 4-4. 동기화 검증
 ```bash
@@ -78,8 +78,8 @@ done
 diff <(cat skills/{skill_name}/SKILL.md) <(cat ~/.claude/skills/{skill_name}/SKILL.md)
 
 # 공통 모듈 검증 (핵심 파일)
-diff skills/_kr-common/kr_client.py ~/.claude/skills/_kr-common/kr_client.py
-diff skills/_kr-common/providers/ ~/.claude/skills/_kr-common/providers/ -r
+diff skills/_kr_common/kr_client.py ~/.claude/skills/_kr_common/kr_client.py
+diff skills/_kr_common/providers/ ~/.claude/skills/_kr_common/providers/ -r
 ```
 
 #### 4-5. install.sh 업데이트
@@ -88,7 +88,7 @@ diff skills/_kr-common/providers/ ~/.claude/skills/_kr-common/providers/ -r
 # install.sh 내 "N skills for KOSPI/KOSDAQ analysis" 숫자 변경
 ```
 
-> **주의**: `~/.claude/skills/` 동기화를 빠뜨리면 Claude Code가 구버전 코드를 참조하여 잘못된 분석을 수행할 수 있다. 특히 `_kr-common/`의 프로바이더(yfinance, KRX API 등)나 `kr_client.py` 폴백 로직 변경 시 동기화 누락은 데이터 소스 폴백이 동작하지 않는 원인이 된다.
+> **주의**: `~/.claude/skills/` 동기화를 빠뜨리면 Claude Code가 구버전 코드를 참조하여 잘못된 분석을 수행할 수 있다. 특히 `_kr_common/`의 프로바이더(yfinance, KRX API 등)나 `kr_client.py` 폴백 로직 변경 시 동기화 누락은 데이터 소스 폴백이 동작하지 않는 원인이 된다.
 
 ### 5. 데이터 소스 우선순위 (Fallback Policy)
 
@@ -102,8 +102,8 @@ Tier 3: KIS Open API (한국투자증권, 계좌 기반)
 Tier 4: WebSearch 폴백 (항상 가용)
 ```
 - KRX API Key: `.env`에 `KRX_API_KEY` 설정 완료
-- yfinance Provider: `_kr-common/providers/yfinance_provider.py` (KOSPI→.KS, KOSDAQ→.KQ)
-- KRX Provider: `_kr-common/providers/krx_openapi_provider.py`
+- yfinance Provider: `_kr_common/providers/yfinance_provider.py` (KOSPI→.KS, KOSDAQ→.KQ)
+- KRX Provider: `_kr_common/providers/krx_openapi_provider.py`
 - 통합: `kr_client.py`에서 Tier 0 → Tier 1(yfinance) → Tier 2(PyKRX/FDR) 순 폴백
 
 #### 5-1. WebSearch 폴백 규칙
@@ -161,7 +161,7 @@ cd skills/{skill_name}/scripts && python -m pytest tests/ -v
 ## 프로젝트 구조
 
 - **스킬**: `skills/kr-*/`, `skills/us-*/`
-- **공통 모듈**: `skills/_kr-common/`
+- **공통 모듈**: `skills/_kr_common/`
 - **PDCA 문서**: `docs/01-plan/`, `docs/02-design/`, `docs/03-analysis/`, `docs/04-report/`
 - **아카이브**: `docs/archive/YYYY-MM/`
 - **리포트 출력**: `reports/` (.gitignore 대상)

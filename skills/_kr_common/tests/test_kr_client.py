@@ -1,14 +1,14 @@
 """KRClient 통합 테스트.
 
-실행: python3 -m pytest ~/.claude/skills/_kr-common/tests/ -v
-또는: python3 ~/.claude/skills/_kr-common/tests/test_kr_client.py
+실행: python3 -m pytest ~/.claude/skills/_kr_common/tests/ -v
+또는: python3 ~/.claude/skills/_kr_common/tests/test_kr_client.py
 """
 
 import sys
 import os
 
 # 모듈 경로 추가
-sys.path.insert(0, os.path.expanduser('~/.claude/skills/_kr-common'))
+sys.path.insert(0, os.path.expanduser('~/.claude/skills/_kr_common'))
 sys.path.insert(0, os.path.expanduser('~/.claude/skills'))
 
 import unittest

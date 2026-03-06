@@ -80,9 +80,12 @@ for skill_dir in "$REPO_DIR"/skills/*/; do
     INSTALLED=$((INSTALLED + 1))
 done
 
-# _kr_common 심볼릭 링크 (Python import 호환)
-if [ -d "$SKILLS_DIR/_kr-common" ]; then
-    ln -sf "$SKILLS_DIR/_kr-common" "$SKILLS_DIR/_kr_common"
+# 구 _kr-common 디렉토리/심링크 정리 (리네임 이전 잔존물)
+if [ -d "$SKILLS_DIR/_kr-common" ] && [ ! -L "$SKILLS_DIR/_kr-common" ]; then
+    rm -rf "$SKILLS_DIR/_kr-common"
+    echo "  Cleaned up legacy _kr-common directory"
+elif [ -L "$SKILLS_DIR/_kr-common" ]; then
+    rm -f "$SKILLS_DIR/_kr-common"
 fi
 
 # 3. agents 복사

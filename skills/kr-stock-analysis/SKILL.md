@@ -154,8 +154,8 @@ python comprehensive_scorer.py --ticker 005930
 
 ## Output Rule (마크다운 리포트 저장)
 
-- **템플릿**: `_kr-common/templates/report_stock.md` 의 구조를 그대로 따른다
-- **공통 규칙**: `_kr-common/templates/report_rules.md` 참조
+- **템플릿**: `_kr_common/templates/report_stock.md` 의 구조를 그대로 따른다
+- **공통 규칙**: `_kr_common/templates/report_rules.md` 참조
 - 저장 경로: `reports/kr-stock-analysis_{종목코드}_{종목명}_{YYYYMMDD}.md`
 - `reports/` 디렉토리가 없으면 자동 생성
 - 동일 파일명이 존재하면 덮어쓰기 (같은 날 재분석 시)

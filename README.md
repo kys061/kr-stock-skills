@@ -66,7 +66,7 @@ Claude Code에서 `/스킬명` 형태로 호출합니다:
 
 ### Phase 1: 공통 데이터 클라이언트
 
-#### `_kr-common` — KRClient 통합 데이터 클라이언트
+#### `_kr_common` — KRClient 통합 데이터 클라이언트
 
 모든 KR 스킬이 내부적으로 사용하는 공통 데이터 레이어. 직접 호출이 아닌 다른 스킬을 통해 자동 사용됩니다.
 
@@ -804,7 +804,7 @@ kr-stock-skills/
 ├── README.md
 ├── install.sh                   # 설치 스크립트
 ├── skills/
-│   ├── _kr-common/              # Phase 1: 공통 데이터 클라이언트
+│   ├── _kr_common/              # Phase 1: 공통 데이터 클라이언트
 │   ├── kr-market-environment/   # Phase 2: 시장 분석 (7개)
 │   ├── kr-market-breadth/
 │   ├── kr-market-news-analyst/
@@ -864,7 +864,7 @@ kr-stock-skills/
 
 | Phase | 내용 | 스킬 수 | 테스트 | Match Rate | 상태 |
 |:-----:|------|:-------:|:------:|:----------:|:----:|
-| 1 | 공통 모듈 (`_kr-common`) | 1 | 25 | 91% | Done |
+| 1 | 공통 모듈 (`_kr_common`) | 1 | 25 | 91% | Done |
 | 2 | 시장 분석 스킬 | 7 | 101 | 92% | Done |
 | 3 | 마켓 타이밍 스킬 | 5 | 202 | 97% | Done |
 | 4 | 종목 스크리닝 스킬 | 7 | 250 | 97% | Done |
