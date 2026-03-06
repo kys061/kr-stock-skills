@@ -17,6 +17,20 @@
 - `README.md` Skills Reference 섹션 ("Skills Reference (N개)")
 - `install.sh` ("N skills for KOSPI/KOSDAQ analysis")
 
+### 2-1. README.md 동기화 (필수)
+
+스킬 추가/수정 또는 프로젝트 설정 변경 시 `README.md`도 함께 업데이트한다:
+
+| 변경 사항 | README.md 업데이트 대상 |
+|-----------|----------------------|
+| 새 스킬 추가/삭제 | 스킬 수, Skills Reference 섹션에 스킬 설명 추가/제거 |
+| `_kr-common/` 공통 모듈 변경 (프로바이더 추가 등) | Tier 구조 설명, 설치 의존성(`pip install` 목록) |
+| 데이터 소스 변경 (API 추가/제거) | Tier 구조 배지, Environment Variables 섹션 |
+| `install.sh` 변경 | Installation 섹션 |
+| 새 SKILL.md에 사용법 추가 | Skills Reference에 `/스킬명` 예시 추가 |
+
+> **원칙**: `README.md`는 외부 사용자가 보는 문서이므로, 내부 변경이 사용자에게 영향을 주는 경우(설치 방법, 의존성, 사용 가능한 스킬, 데이터 소스 등) 반드시 반영한다.
+
 ### 3. Output Rule
 
 모든 스킬 실행 결과는 마크다운 파일로 저장한다:
