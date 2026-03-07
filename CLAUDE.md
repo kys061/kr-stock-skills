@@ -183,6 +183,6 @@ cd skills/{skill_name}/scripts && python -m pytest tests/ -v
 
 ## 현재 상태
 
-- 총 46개 스킬 (Phase 1-9 + 3 Patch)
+- 총 47개 스킬 (Phase 1-9 + 4 Patch)
 - 누적 2,009+ 테스트
 - Phase 3-9 + 3 Patch 연속 10회 97% Match Rate

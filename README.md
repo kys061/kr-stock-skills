@@ -1,6 +1,6 @@
 # Korean Stock Trading Skills for Claude Code
 
-한국 주식 시장(KOSPI/KOSDAQ) 분석을 위한 Claude Code 플러그인. 46개 전문 스킬로 시장 분석, 종목 스크리닝, 전략 수립, 포트폴리오 관리까지 워크플로우를 제공합니다.
+한국 주식 시장(KOSPI/KOSDAQ) 분석을 위한 Claude Code 플러그인. 47개 전문 스킬로 시장 분석, 종목 스크리닝, 전략 수립, 포트폴리오 관리까지 워크플로우를 제공합니다.
 
 > **Tier 0**: KRX Open API (인증키 기반, 일 10,000회)
 > **Tier 1**: yfinance — 무료, 무제한, OHLCV+재무+밸류에이션 (즉시 가용)
@@ -62,7 +62,7 @@ Claude Code에서 `/스킬명` 형태로 호출합니다:
 
 ---
 
-## Skills Reference (46개)
+## Skills Reference (47개)
 
 ### Phase 1: 공통 데이터 클라이언트
 
@@ -694,6 +694,23 @@ Fed 기조, 금리 트렌드, 유동성 3축으로 US 통화정책 레짐을 판
 | `regime_synthesizer` | 종합 | stance*0.35 + rate*0.30 + liquidity*0.35 |
 
 **B방식 오버레이**: 기존 종합 스코어 불변, `(regime_score - 50) * 0.30 * sector_sensitivity` 가산
+
+---
+
+### Patch: 매일 아침 시장 체크
+
+#### `/daily-market-check` — 글로벌 매크로 6개 지표 체크
+
+매일 아침 VIX, CNN Fear & Greed, KOSPI, USD/KRW, S&P 500, EWY 6개 지표를 조회하여 시장 상태를 빠르게 판정합니다.
+
+```
+/daily-market-check
+/daily-market-check 오늘 시장 상태 체크해줘
+```
+
+**출력**: 6개 지표 수치 테이블, 상태 판정 (정상/주의/경고/극공포), 종합 시장 판단 (정상/주의/경고/위험)
+
+**스크립트**: `python3 skills/daily-market-check/scripts/market_check.py` (yfinance 기반 자동 수집)
 
 ---
 
