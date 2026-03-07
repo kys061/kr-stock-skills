@@ -714,6 +714,179 @@ Fed 기조, 금리 트렌드, 유동성 3축으로 US 통화정책 레짐을 판
 
 ---
 
+## Skill Relationship Map (스킬 연관 관계도)
+
+47개 스킬은 **7개 클러스터 + 1개 크로스커팅 모듈**로 구성되며, 데이터 → 분석 → 선별 → 의사결정 파이프라인을 형성합니다.
+
+### 전체 아키텍처
+
+```mermaid
+flowchart TD
+    DATA["_kr_common<br/>(KRX API · yfinance · PyKRX · DART)"]
+    USM["us-monetary-regime<br/>(overlay → 12 skills)"]
+
+    MI["시장 분석 (9)"]
+    EVT["수급 · 이벤트 (8)"]
+    TIM["타이밍 · 리스크 (5)"]
+    SCR["스크리닝 (7)"]
+    EDGE["Edge 파이프라인 (6)"]
+    DIV["배당 워크플로우 (3)"]
+    DEC["전략 · 의사결정 (8)"]
+    OUT["reports/"]
+
+    DATA --> MI & EVT
+    MI --> TIM & SCR & DEC
+    EVT --> SCR & DEC
+    TIM --> DEC
+    SCR --> DEC
+    EDGE --> DEC
+    DIV --> DEC
+    USM -.->|overlay| DEC & MI
+    DEC --> OUT
+```
+
+### 클러스터별 구성 및 연관 관계
+
+#### ① 시장 분석 (9개) — 시장 전체 상태 진단
+
+| 스킬 | 역할 | 다운스트림 |
+|------|------|-----------|
+| `market-environment` | 글로벌+한국 종합 진단 | → 전략 판단 컨텍스트 |
+| `market-breadth` | MA200 시장폭 0-100 | → top-detector, ftd, breadth-chart, **synthesizer** |
+| `uptrend-analyzer` | 업종별 상승추세 비율 | → breadth-chart, **synthesizer** |
+| `macro-regime` | 크로스에셋 레짐 분류 | → top-detector, canslim(M), **synthesizer** |
+| `sector-analyst` | 15섹터 성과·로테이션 | → growth-outlook, scenario-analyzer |
+| `theme-detector` | 테마 트렌드 탐지 | → **synthesizer** |
+| `technical-analyst` | 차트 기술적 분석 | → stock-analysis |
+| `market-news-analyst` | 뉴스 임팩트 1-10 | → 시장 컨텍스트 |
+| `daily-market-check` | 6지표 매일 체크 | → 데일리 판단 |
+
+#### ② 수급 · 이벤트 (8개) — 종목/시장 레벨 데이터
+
+| 스킬 | 분석 레벨 | 주요 연관 |
+|------|:--------:|----------|
+| `institutional-flow` | 종목 | → stock-analysis (수급 컴포넌트) |
+| `supply-demand-analyzer` | 시장/섹터 | → 15섹터 HHI 집중도 |
+| `short-sale-tracker` | 종목 | → 숏커버/숏스퀴즈 시그널 |
+| `program-trade-analyzer` | 시장 | 한국 고유 (선물 베이시스, 만기일) |
+| `economic-calendar` | 이벤트 | → 매크로 이벤트 타이밍 |
+| `earnings-calendar` | 이벤트 | → **earnings-trade**, **pead-screener** |
+| `earnings-trade` | 종목 | ← earnings-calendar → 5팩터 스코어 |
+| `dart-disclosure-monitor` | 종목 | → 공시 영향도 1-10, dividend-monitor |
+
+#### ③ 타이밍 · 리스크 (5개) — 진입/퇴출 시점 판단
+
+| 스킬 | 업스트림 | 다운스트림 |
+|------|---------|-----------|
+| `market-top-detector` | ← breadth, macro-regime | → **synthesizer** |
+| `ftd-detector` | ← breadth | → **synthesizer** |
+| `bubble-detector` | (독립) | → 리스크 경고 |
+| `breadth-chart` | ← breadth, uptrend | → 시각적 진단 |
+| `credit-monitor` | (독립) | → 반대매매 리스크 경고 |
+
+> `ftd-detector`(바닥 탐지) ↔ `market-top-detector`(천장 탐지)는 **공격/방어 페어**로 함께 사용
+
+#### ④ 스크리닝 (7개) — 조건별 종목 선별
+
+| 스킬 | 방법론 | 주요 연관 |
+|------|--------|----------|
+| `stock-screener` | 다조건 필터 | (독립 범용 도구) |
+| `canslim-screener` | CANSLIM 7항목 | M항목 ← breadth, macro-regime, top-detector → **synthesizer** |
+| `vcp-screener` | Minervini VCP | → **synthesizer** |
+| `value-dividend` | 밸류+배당 3-Phase | → dividend-sop |
+| `dividend-pullback` | RSI 눌림목 | → dividend-sop |
+| `pead-screener` | 실적 드리프트 | ← earnings-calendar |
+| `pair-trade` | 공적분+Z-Score | (독립) |
+
+#### ⑤ Edge 파이프라인 (6개) — 체계적 엣지 발굴
+
+순차적 파이프라인으로 시장 관찰에서 실행 가능한 전략까지 연결합니다:
+
+```
+edge-hint ──→ edge-concept ──→ edge-strategy ──→ edge-candidate
+(시장 관찰)     (가설 합성)       (전략 드래프트)     (후보 탐지)
+                                      │
+                                      ▼
+                           backtest-expert ──→ strategy-pivot
+                           (5차원 평가)          (정체 시 피봇)
+```
+
+#### ⑥ 배당 워크플로우 (3개) — 배당 투자 전 과정
+
+스크리닝(④) → 배당 SOP → 전략(⑦)으로 이어지는 크로스 클러스터 워크플로우:
+
+```
+[스크리닝 ④]                [배당 ⑥]                    [전략 ⑦]
+value-dividend ──┐
+                 ├──→ dividend-sop ──→ dividend-monitor
+dividend-pullback┘    (5단계 SOP)      (T1-T5 안전성)
+                           │
+                           ▼
+                      dividend-tax ──→ portfolio-manager
+                      (세제 최적화)      (세후 수익률)
+```
+
+#### ⑦ 전략 · 의사결정 (8개) — 최종 종합 판단
+
+| 스킬 | 통합 범위 | 업스트림 |
+|------|----------|---------|
+| `strategy-synthesizer` | 9개 스킬 통합 → 0-100 확신도 | breadth, uptrend, top-detector, ftd, macro-regime, theme, vcp, canslim, growth-outlook |
+| `stock-analysis` | 5-컴포넌트 → 0-100 종합 | 펀더멘털(30%) + 기술적(22%) + 수급(22%) + 밸류(13%) + 성장(13%) |
+| `weekly-strategy` | 시장상태 + 15섹터 + 체크리스트 | 다수 업스트림 |
+| `portfolio-manager` | 세후 수익률, 리밸런싱 | dividend-tax, stock-analysis |
+| `scenario-analyzer` | 3-시나리오 18개월 전개 | ← sector-analyst |
+| `growth-outlook` | 6-컴포넌트 성장 전망 | → stock-analysis, **synthesizer** |
+| `options-advisor` | KOSPI200 옵션 전략 | (독립) |
+| `skill-reviewer` | 스킬 품질 검증 | (메타 유틸리티) |
+
+#### ⑧ 크로스커팅: US 통화정책 오버레이
+
+`us-monetary-regime`이 산출한 레짐 스코어가 **12개 스킬**의 최종 점수에 B방식 오버레이로 가산됩니다:
+
+```
+overlay = (regime_score - 50) × 0.30 × sector_sensitivity
+```
+
+| 적용 유형 | 스킬 |
+|:---------:|------|
+| 스코어링 | stock-analysis, sector-analyst, growth-outlook, portfolio-manager, strategy-synthesizer |
+| 컨텍스트 | macro-regime, market-environment, market-breadth, scenario-analyzer, earnings-trade, economic-calendar, weekly-strategy |
+
+### strategy-synthesizer 통합 구조
+
+```mermaid
+flowchart LR
+    MB["market-breadth"] --> SYN
+    UA["uptrend-analyzer"] --> SYN
+    MTD["market-top-detector"] --> SYN
+    FTD["ftd-detector"] --> SYN
+    MR["macro-regime"] --> SYN
+    TD["theme-detector"] --> SYN
+    VCP["vcp-screener"] --> SYN
+    CS["canslim-screener"] --> SYN
+    GO["growth-outlook"] --> SYN
+    SYN["strategy-synthesizer<br/>(0-100 Conviction Score)"]
+    USM["us-monetary-regime"] -.->|overlay| SYN
+```
+
+### 핵심 허브 스킬 (연결 수 Top 5)
+
+| 순위 | 스킬 | 역할 | 연결 수 |
+|:----:|------|------|:------:|
+| 1 | `strategy-synthesizer` | 9개 업스트림 통합 → 확신도 | **10** |
+| 2 | `market-breadth` | 시장폭 → 4개 스킬에 공급 | **5** |
+| 3 | `stock-analysis` | 5-컴포넌트 종합 분석 | **5** |
+| 4 | `macro-regime` | 레짐 분류 → 3개 스킬에 공급 | **4** |
+| 5 | `us-monetary-regime` | 12개 스킬에 오버레이 | **12** |
+
+### 독립 실행 가능 스킬 (업스트림 의존 없음)
+
+다른 스킬의 선행 실행 없이 단독으로 사용할 수 있는 스킬:
+
+`stock-screener` · `pair-trade` · `options-advisor` · `bubble-detector` · `credit-monitor` · `short-sale-tracker` · `institutional-flow` · `technical-analyst` · `market-news-analyst` · `daily-market-check` · `dart-disclosure-monitor` · `skill-reviewer`
+
+---
+
 ## Workflows
 
 ### 1. 매일 아침 시장 체크
