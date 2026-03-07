@@ -7,19 +7,20 @@ description: KRClient 기반 PER/PBR/배당수익률/시가총액 등 다조건 
 
 > KRClient 기반 다조건 필터 스크리닝 도구.
 > 자연어 요청을 KRClient 메서드 조합으로 변환하여 한국 주식을 스크리닝합니다.
-> **KRClient 불가 시 WebSearch 폴백으로 스크리닝을 계속한다.**
+> **Tier 0-3 실패 시 WebSearch 폴백으로 스크리닝을 계속한다.**
 
 ## 데이터 소스 우선순위
 
 ```
-1순위: KRX Open API (인증키) → 전 종목 정량 스크리닝
-2순위: KRClient (pykrx/FDR) → 프로그래밍 스크리닝
-3순위: WebSearch 폴백 → 다축 검색 기반 정성 스크리닝
+1순위: KRX Open API (승인 완료, OHLCV/시총/지수)
+2순위: yfinance (PER/PBR/재무제표/밸류에이션)
+3순위: KRClient (pykrx/FDR) → 프로그래밍 스크리닝
+4순위: WebSearch 폴백 → 다축 검색 기반 정성 스크리닝
 ```
 
 ### WebSearch 폴백 실행 절차
 
-KRClient 실패(403/에러) 시 아래 절차로 스크리닝한다:
+Tier 0-2 실패 시 아래 절차로 스크리닝한다:
 
 1. **시총 상위 수집**: `"{시장} 시가총액 상위 종목 {년도}"` 검색
 2. **수익성 상위 수집**: `"{시장} 영업이익률 상위 종목 실적"` 검색
@@ -31,7 +32,7 @@ KRClient 실패(403/에러) 시 아래 절차로 스크리닝한다:
 
 ### WebSearch 폴백 시 리포트 표기
 ```markdown
-> **데이터 소스**: WebSearch 폴백 (KRX API 미가용)
+> **데이터 소스**: WebSearch 폴백 (Tier 0-2 실패)
 > **정밀도 한계**: 정량 필터링 불가, 뉴스/리포트 기반 정성 평가
 ```
 

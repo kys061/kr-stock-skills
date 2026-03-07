@@ -9,8 +9,8 @@ description: 업종별 상승추세 종목 비율 분석으로 시장 건강도 
 
 ## 데이터 소스 우선순위
 
-1순위: KRX Open API / KIS API → 2순위: KRClient (pykrx/FDR) → 3순위: WebSearch 폴백.
-KRClient 실패 시 WebSearch로 데이터를 수집하여 분석을 계속하며, 리포트에 데이터 소스를 명시한다.
+1순위: KRX Open API (승인 완료, OHLCV/시총/지수) → 2순위: yfinance (PER/PBR/재무) → 3순위: KRClient (pykrx/FDR) → 4순위: WebSearch 폴백.
+Tier 0-2 실패 시 WebSearch로 데이터를 수집하여 분석을 계속하며, 리포트에 데이터 소스를 명시한다.
 
 ## 개요
 

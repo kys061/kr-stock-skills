@@ -51,7 +51,8 @@ class TestBuildSubject:
 class TestEmailConfig:
     """이메일 설정 테스트."""
 
-    def test_default_disabled(self):
+    def test_default_disabled(self, monkeypatch):
+        monkeypatch.delenv('EMAIL_ENABLED', raising=False)
         cfg = EmailConfig()
         assert cfg.enabled is False
 
