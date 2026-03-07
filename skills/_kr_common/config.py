@@ -66,6 +66,44 @@ class KRConfig:
         return 2 if self.kis_available else 1
 
 
+@dataclass
+class EmailConfig:
+    """이메일 발송 설정 (Gmail SMTP)."""
+
+    enabled: bool = field(
+        default_factory=lambda: os.getenv('EMAIL_ENABLED', 'false').lower() == 'true'
+    )
+    smtp_host: str = field(
+        default_factory=lambda: os.getenv('EMAIL_SMTP_HOST', 'smtp.gmail.com')
+    )
+    smtp_port: int = field(
+        default_factory=lambda: int(os.getenv('EMAIL_SMTP_PORT', '587'))
+    )
+    smtp_user: str = field(
+        default_factory=lambda: os.getenv('EMAIL_SMTP_USER', '')
+    )
+    smtp_password: str = field(
+        default_factory=lambda: os.getenv('EMAIL_SMTP_PASSWORD', '')
+    )
+    from_addr: str = field(
+        default_factory=lambda: os.getenv('EMAIL_FROM', '')
+    )
+    to_addr: str = field(
+        default_factory=lambda: os.getenv('EMAIL_TO', '')
+    )
+    cc_addr: str = field(
+        default_factory=lambda: os.getenv('EMAIL_CC', '')
+    )
+    subject_prefix: str = field(
+        default_factory=lambda: os.getenv('EMAIL_SUBJECT_PREFIX', '[KR-Stock]')
+    )
+
+    @property
+    def is_configured(self) -> bool:
+        """발송에 필요한 최소 설정이 완료되었는지 확인."""
+        return bool(self.enabled and self.smtp_user and self.smtp_password and self.to_addr)
+
+
 # 싱글턴 기본 설정
 _default_config = None
 
@@ -76,3 +114,14 @@ def get_config() -> KRConfig:
     if _default_config is None:
         _default_config = KRConfig()
     return _default_config
+
+
+_email_config = None
+
+
+def get_email_config() -> EmailConfig:
+    """이메일 설정 인스턴스 반환."""
+    global _email_config
+    if _email_config is None:
+        _email_config = EmailConfig()
+    return _email_config

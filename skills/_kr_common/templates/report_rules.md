@@ -109,3 +109,36 @@ Sources:
 | kr-sector-analyst | report_macro.md |
 | 기타 개별 종목 분석 | report_stock.md |
 | 기타 시장 분석 | report_macro.md |
+
+## 8. 이메일 발송 (선택)
+
+리포트 MD 파일 생성 후 `.env`의 `EMAIL_ENABLED=true` 설정 시 자동 발송한다.
+
+### 발송 절차
+
+1. Write 도구로 `reports/` 에 MD 파일 생성
+2. Bash로 이메일 발송 호출:
+```bash
+cd ~/stock && python3 skills/_kr_common/utils/email_sender.py "{리포트_파일_경로}" "{스킬명}"
+```
+3. 발송 실패 시에도 리포트 생성은 정상 완료로 간주 (fail-safe)
+
+### 설정
+
+`.env` 파일에 아래 항목을 설정한다 (Gmail App Password 방식):
+
+| 항목 | 설명 |
+|------|------|
+| `EMAIL_ENABLED` | `true`/`false` (기본: false) |
+| `EMAIL_SMTP_HOST` | `smtp.gmail.com` |
+| `EMAIL_SMTP_PORT` | `587` |
+| `EMAIL_SMTP_USER` | Gmail 주소 |
+| `EMAIL_SMTP_PASSWORD` | 앱 비밀번호 (16자리) |
+| `EMAIL_TO` | 수신자 주소 |
+
+### 이메일 제목 자동 생성
+
+파일명에서 자동 파싱:
+```
+[KR-Stock] {skill_name}: {대상명} ({YYYY-MM-DD})
+```
