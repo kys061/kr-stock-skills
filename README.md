@@ -1,6 +1,6 @@
 # Korean Stock Trading Skills for Claude Code
 
-한국 주식 시장(KOSPI/KOSDAQ) 분석을 위한 Claude Code 플러그인. 48개 전문 스킬로 시장 분석, 종목 스크리닝, 전략 수립, 포트폴리오 관리까지 워크플로우를 제공합니다.
+한국 주식 시장(KOSPI/KOSDAQ) 분석을 위한 Claude Code 플러그인. 49개 전문 스킬로 시장 분석, 종목 스크리닝, 전략 수립, 포트폴리오 관리까지 워크플로우를 제공합니다.
 
 > **Tier 0**: KRX Open API (인증키 기반, 일 10,000회)
 > **Tier 1**: yfinance — 무료, 무제한, OHLCV+재무+밸류에이션 (즉시 가용)
@@ -62,7 +62,7 @@ Claude Code에서 `/스킬명` 형태로 호출합니다:
 
 ---
 
-## Skills Reference (48개)
+## Skills Reference (49개)
 
 ### Phase 1: 공통 데이터 클라이언트
 
@@ -732,9 +732,27 @@ Fed 기조, 금리 트렌드, 유동성 3축으로 US 통화정책 레짐을 판
 
 ---
 
+### Patch: 역사적 위기 비교 패턴
+
+#### `/kr-crisis-compare` — 역사적 위기 비교 분석
+
+현재 시장 상황을 5개 역사적 위기(금융위기/코로나/금리인상/관세쇼크/이란위기)와 5차원 유사도 비교하여 가장 유사한 패턴의 회복 시나리오를 제시합니다.
+
+```
+/kr-crisis-compare
+/kr-crisis-compare 현재 시장 상황 역사적 비교 분석
+/kr-crisis-compare --type geopolitical  위기 유형 수동 지정
+```
+
+**출력**: 유사도 순위 테이블, 회복 패턴(1주/1개월/3개월/6개월), 낙관/기본/보수 3-시나리오
+
+**스크립트**: `python3 skills/kr-crisis-compare/scripts/crisis_compare.py` (yfinance 기반 자동 수집 + 5차원 유사도 엔진)
+
+---
+
 ## Skill Relationship Map (스킬 연관 관계도)
 
-48개 스킬은 **7개 클러스터 + 1개 크로스커팅 모듈**로 구성되며, 데이터 → 분석 → 선별 → 의사결정 파이프라인을 형성합니다.
+49개 스킬은 **7개 클러스터 + 1개 크로스커팅 모듈**로 구성되며, 데이터 → 분석 → 선별 → 의사결정 파이프라인을 형성합니다.
 
 ### 전체 아키텍처
 
@@ -745,7 +763,7 @@ flowchart TD
 
     MI["시장 분석 (9)"]
     EVT["수급 · 이벤트 (8)"]
-    TIM["타이밍 · 리스크 (6)"]
+    TIM["타이밍 · 리스크 (7)"]
     SCR["스크리닝 (7)"]
     EDGE["Edge 파이프라인 (6)"]
     DIV["배당 워크플로우 (3)"]
@@ -792,7 +810,7 @@ flowchart TD
 | `earnings-trade` | 종목 | ← earnings-calendar → 5팩터 스코어 |
 | `dart-disclosure-monitor` | 종목 | → 공시 영향도 1-10, dividend-monitor |
 
-#### ③ 타이밍 · 리스크 (6개) — 진입/퇴출 시점 판단
+#### ③ 타이밍 · 리스크 (7개) — 진입/퇴출 시점 판단
 
 | 스킬 | 업스트림 | 다운스트림 |
 |------|---------|-----------|
@@ -802,6 +820,7 @@ flowchart TD
 | `breadth-chart` | ← breadth, uptrend | → 시각적 진단 |
 | `credit-monitor` | (독립) | → 반대매매 리스크 경고 |
 | `rebound-signal` | ← credit-monitor, daily-check | → 급락 시 14시그널 바닥 판단 |
+| `crisis-compare` | ← rebound-signal, daily-check | → 역사적 패턴 기반 회복 시나리오 |
 
 > `ftd-detector`(바닥 탐지) ↔ `market-top-detector`(천장 탐지)는 **공격/방어 페어**로 함께 사용
 
@@ -1060,7 +1079,8 @@ kr-stock-skills/
 │   └── kr-dart-disclosure-monitor/
 │   ├── kr-growth-outlook/       # Patch: 6-컴포넌트 성장성 전망
 │   ├── us-monetary-regime/      # Patch: US 통화정책 레짐 (독립 스킬)
-│   └── kr-rebound-signal/      # Patch: 급락 시 14개 반등 시그널 체크
+│   ├── kr-rebound-signal/      # Patch: 급락 시 14개 반등 시그널 체크
+│   └── kr-crisis-compare/      # Patch: 역사적 위기 비교 패턴
 └── docs/                        # PDCA 설계 문서
     ├── 01-plan/
     ├── 02-design/
@@ -1086,7 +1106,8 @@ kr-stock-skills/
 | Patch | 성장성 전망 (kr-growth-outlook) | 1 | 72 | 97% | Done |
 | Patch | US 통화정책 (us-monetary-regime) | 1 | 106 | 97% | Done |
 | Patch | 반등 시그널 (kr-rebound-signal) | 1 | 59 | - | Done |
-| **Total** | | **48** | **2,029** | | |
+| Patch | 위기 비교 (kr-crisis-compare) | 1 | 76 | - | Done |
+| **Total** | | **49** | **2,105** | | |
 
 ### Requirements
 
