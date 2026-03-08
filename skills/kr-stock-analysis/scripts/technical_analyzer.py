@@ -250,6 +250,58 @@ def _score_volume(volume_ratio):
         return 30.0  # 극소 거래
 
 
+def calc_support_resistance(current_price, ma_data, bb_data, week52_high, week52_low):
+    """지지선/저항선 산출.
+
+    Args:
+        current_price: 현재가
+        ma_data: {'ma20': float, 'ma60': float, 'ma120': float}
+        bb_data: {'upper': float, 'lower': float, ...} or None
+        week52_high: 52주 최고가 (None 허용)
+        week52_low: 52주 최저가 (None 허용)
+
+    Returns:
+        {
+            'supports': [float, ...],    # 현재가 아래 지지선 (내림차순)
+            'resistances': [float, ...], # 현재가 위 저항선 (오름차순)
+        }
+    """
+    levels = []
+
+    # 이동평균선
+    for key in ('ma20', 'ma60', 'ma120'):
+        val = ma_data.get(key)
+        if val is not None and val > 0:
+            levels.append(val)
+
+    # 볼린저 밴드
+    if bb_data:
+        if bb_data.get('lower'):
+            levels.append(bb_data['lower'])
+        if bb_data.get('upper'):
+            levels.append(bb_data['upper'])
+
+    # 52주 고/저
+    if week52_high and week52_high > 0:
+        levels.append(week52_high)
+    if week52_low and week52_low > 0:
+        levels.append(week52_low)
+
+    # 분류
+    supports = sorted(
+        [lv for lv in levels if lv < current_price],
+        reverse=True,
+    )
+    resistances = sorted(
+        [lv for lv in levels if lv > current_price],
+    )
+
+    return {
+        'supports': supports,
+        'resistances': resistances,
+    }
+
+
 def analyze_technicals(ohlcv_data):
     """종합 기술적 분석.
 

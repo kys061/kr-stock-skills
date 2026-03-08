@@ -15,6 +15,7 @@ from fundamental_analyzer import (
 from technical_analyzer import (
     TECHNICAL_INDICATORS, calc_moving_averages, calc_rsi,
     calc_macd, calc_bollinger_bands, analyze_technicals,
+    calc_support_resistance,
 )
 from supply_demand_analyzer import (
     SUPPLY_DEMAND_ANALYSIS, FLOW_THRESHOLDS,
@@ -22,7 +23,10 @@ from supply_demand_analyzer import (
 )
 from comprehensive_scorer import (
     COMPREHENSIVE_SCORING, ANALYSIS_TYPES, ANALYSIS_GRADES,
-    calc_comprehensive_score,
+    BUY_ZONE_CONFIG, SELL_TARGET_CONFIG, RR_RATIO_LABELS,
+    GRADE_DISPLAY_RULES, _LEVEL_TOLERANCE, DISCLAIMER,
+    calc_comprehensive_score, calc_buy_sell_targets, calc_rr_ratio,
+    _identify_level_name,
 )
 from report_generator import StockAnalysisReportGenerator
 
@@ -589,6 +593,242 @@ class TestReportGenerator:
         assert '펀더멘털' in report
         assert '수급' in report
         assert 'RSI' in report
+
+
+# ═══════════════════════════════════════════════════════
+# 7. 지지/저항선 산출 테스트
+# ═══════════════════════════════════════════════════════
+
+class TestCalcSupportResistance:
+    """calc_support_resistance() 테스트 (T-01 ~ T-08)."""
+
+    def test_basic_support_resistance(self):  # T-01
+        ma = {'ma20': 95, 'ma60': 90, 'ma120': 85}
+        bb = {'upper': 110, 'lower': 88}
+        r = calc_support_resistance(100, ma, bb, None, None)
+        assert r['supports'] == [95, 90, 88, 85]
+        assert r['resistances'] == [110]
+
+    def test_with_52week(self):  # T-02
+        ma = {'ma20': 95, 'ma60': 90, 'ma120': 85}
+        r = calc_support_resistance(100, ma, None, 120, 70)
+        assert 70 in r['supports']
+        assert 120 in r['resistances']
+
+    def test_no_ma_data(self):  # T-03
+        r = calc_support_resistance(100, {}, None, None, None)
+        assert r['supports'] == []
+        assert r['resistances'] == []
+
+    def test_no_bb_data(self):  # T-04
+        ma = {'ma20': 95, 'ma60': 105}
+        r = calc_support_resistance(100, ma, None, None, None)
+        assert 95 in r['supports']
+        assert 105 in r['resistances']
+        # BB levels should not appear
+        assert len(r['supports']) == 1
+        assert len(r['resistances']) == 1
+
+    def test_all_above(self):  # T-05
+        ma = {'ma20': 110, 'ma60': 120, 'ma120': 130}
+        r = calc_support_resistance(100, ma, None, None, None)
+        assert r['supports'] == []
+        assert len(r['resistances']) == 3
+
+    def test_all_below(self):  # T-06
+        ma = {'ma20': 90, 'ma60': 80, 'ma120': 70}
+        r = calc_support_resistance(100, ma, None, None, None)
+        assert len(r['supports']) == 3
+        assert r['resistances'] == []
+
+    def test_sort_order(self):  # T-07
+        ma = {'ma20': 90, 'ma60': 85, 'ma120': 70}
+        bb = {'upper': 115, 'lower': 80}
+        r = calc_support_resistance(100, ma, bb, 120, 60)
+        # supports: 내림차순 (현재가에 가까운 순)
+        assert r['supports'] == sorted(r['supports'], reverse=True)
+        # resistances: 오름차순
+        assert r['resistances'] == sorted(r['resistances'])
+
+    def test_none_values(self):  # T-08
+        ma = {'ma20': None, 'ma60': 90, 'ma120': None}
+        r = calc_support_resistance(100, ma, None, None, None)
+        assert 90 in r['supports']
+        assert len(r['supports']) == 1
+
+
+# ═══════════════════════════════════════════════════════
+# 8. 매수/매도 타점 산출 테스트
+# ═══════════════════════════════════════════════════════
+
+class TestCalcBuySellTargets:
+    """calc_buy_sell_targets() 테스트 (T-09 ~ T-20)."""
+
+    def test_buy_strong_buy_grade(self):  # T-09
+        r = calc_buy_sell_targets(
+            current_price=100, grade='STRONG_BUY',
+            supports=[95, 90, 85], resistances=[110, 120],
+        )
+        assert r['buy_zone'] is not None
+        assert r['buy_zone']['show'] is True
+        assert r['buy_zone']['buy_1']['price'] > 0
+
+    def test_buy_buy_grade(self):  # T-10
+        r = calc_buy_sell_targets(
+            current_price=100, grade='BUY',
+            supports=[95, 90, 85], resistances=[110],
+        )
+        assert r['buy_zone'] is not None
+        assert r['buy_zone']['show'] is True
+
+    def test_buy_hold_grade(self):  # T-11
+        r = calc_buy_sell_targets(
+            current_price=100, grade='HOLD',
+            supports=[95, 90], resistances=[110],
+        )
+        assert r['buy_zone'] is None
+
+    def test_buy_sell_grade(self):  # T-12
+        r = calc_buy_sell_targets(
+            current_price=100, grade='SELL',
+            supports=[95], resistances=[110],
+        )
+        assert r['buy_zone'] is None
+        assert r['sell_target'] is not None
+        assert r['sell_target']['show'] is True
+
+    def test_buy_strong_sell_grade(self):  # T-13
+        r = calc_buy_sell_targets(
+            current_price=100, grade='STRONG_SELL',
+            supports=[95], resistances=[110],
+        )
+        assert r['buy_zone'] is None
+
+    def test_sell_with_consensus(self):  # T-14
+        r = calc_buy_sell_targets(
+            current_price=100, grade='BUY',
+            supports=[95, 90], resistances=[120],
+            target_mean=110,
+        )
+        assert r['sell_target'] is not None
+        assert r['sell_target']['sell_1']['price'] == 110
+
+    def test_sell_without_consensus(self):  # T-15
+        r = calc_buy_sell_targets(
+            current_price=100, grade='BUY',
+            supports=[95, 90], resistances=[],
+            target_mean=None,
+        )
+        assert r['sell_target'] is not None
+        assert r['sell_target']['sell_1']['price'] == 110  # fallback: 100 * 1.10
+
+    def test_trailing_stop_high_beta(self):  # T-16
+        r = calc_buy_sell_targets(
+            current_price=100, grade='BUY',
+            supports=[95], resistances=[110],
+            beta=2.0,
+        )
+        assert r['sell_target']['trailing_stop']['pct'] == 0.15
+
+    def test_trailing_stop_low_beta(self):  # T-17
+        r = calc_buy_sell_targets(
+            current_price=100, grade='BUY',
+            supports=[95], resistances=[110],
+            beta=0.5,
+        )
+        assert r['sell_target']['trailing_stop']['pct'] == 0.07
+
+    def test_trailing_stop_default_beta(self):  # T-18
+        r = calc_buy_sell_targets(
+            current_price=100, grade='BUY',
+            supports=[95], resistances=[110],
+            beta=1.0,
+        )
+        assert r['sell_target']['trailing_stop']['pct'] == 0.10
+
+    def test_trailing_stop_no_beta(self):  # T-19
+        r = calc_buy_sell_targets(
+            current_price=100, grade='BUY',
+            supports=[95], resistances=[110],
+            beta=None,
+        )
+        assert r['sell_target']['trailing_stop']['pct'] == 0.10
+
+    def test_disclaimer_always_present(self):  # T-20
+        for grade in ('STRONG_BUY', 'BUY', 'HOLD', 'SELL', 'STRONG_SELL'):
+            r = calc_buy_sell_targets(
+                current_price=100, grade=grade,
+                supports=[95], resistances=[110],
+            )
+            assert 'disclaimer' in r
+            assert len(r['disclaimer']) > 0
+
+
+# ═══════════════════════════════════════════════════════
+# 9. R/R Ratio 테스트
+# ═══════════════════════════════════════════════════════
+
+class TestCalcRrRatio:
+    """calc_rr_ratio() 테스트 (T-21 ~ T-25)."""
+
+    def test_rr_favorable(self):  # T-21
+        r = calc_rr_ratio(100, 130, 90)
+        assert r['ratio'] == 3.0
+        assert r['label'] == '매우 유리'
+
+    def test_rr_moderate(self):  # T-22
+        r = calc_rr_ratio(100, 120, 90)
+        assert r['ratio'] == 2.0
+        assert r['label'] == '유리'
+
+    def test_rr_neutral(self):  # T-23
+        r = calc_rr_ratio(100, 110, 90)
+        assert r['ratio'] == 1.0
+        assert r['label'] == '보통'
+
+    def test_rr_unfavorable(self):  # T-24
+        r = calc_rr_ratio(100, 105, 90)
+        assert r['ratio'] == 0.5
+        assert r['label'] == '불리 — 진입 재고 필요'
+
+    def test_rr_zero_loss(self):  # T-25
+        r = calc_rr_ratio(100, 110, 100)
+        assert r['ratio'] == 99.9
+        assert r['label'] == '매우 유리'
+
+
+# ═══════════════════════════════════════════════════════
+# 10. 엣지 케이스 테스트
+# ═══════════════════════════════════════════════════════
+
+class TestBuySellEdgeCases:
+    """매수/매도 엣지 케이스 테스트 (T-26 ~ T-28)."""
+
+    def test_no_supports(self):  # T-26
+        r = calc_buy_sell_targets(
+            current_price=100, grade='BUY',
+            supports=[], resistances=[110],
+        )
+        assert r['buy_zone']['buy_1']['price'] == 95  # fallback: 100 * 0.95
+
+    def test_no_resistances(self):  # T-27
+        r = calc_buy_sell_targets(
+            current_price=100, grade='BUY',
+            supports=[95], resistances=[],
+        )
+        assert r['sell_target']['sell_1']['price'] == 110  # fallback: 100 * 1.10
+
+    def test_all_none(self):  # T-28
+        r = calc_buy_sell_targets(
+            current_price=100, grade='BUY',
+            supports=[], resistances=[],
+            target_mean=None, target_high=None, target_low=None,
+            week52_high=None, week52_low=None, beta=None,
+        )
+        assert r['buy_zone'] is not None
+        assert r['sell_target'] is not None
+        assert r['rr_ratio'] is not None
+        assert r['disclaimer'] == DISCLAIMER
 
 
 if __name__ == '__main__':
