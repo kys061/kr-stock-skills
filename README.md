@@ -1,6 +1,6 @@
 # Korean Stock Trading Skills for Claude Code
 
-한국 주식 시장(KOSPI/KOSDAQ) 분석을 위한 Claude Code 플러그인. 50개 전문 스킬로 시장 분석, 종목 스크리닝, 전략 수립, 포트폴리오 관리까지 워크플로우를 제공합니다.
+한국 주식 시장(KOSPI/KOSDAQ) 분석을 위한 Claude Code 플러그인. 51개 전문 스킬로 시장 분석, 종목 스크리닝, 전략 수립, 포트폴리오 관리까지 워크플로우를 제공합니다.
 
 > **Tier 0**: KRX Open API (인증키 기반, 일 10,000회)
 > **Tier 1**: yfinance — 무료, 무제한, OHLCV+재무+밸류에이션 (즉시 가용)
@@ -62,7 +62,7 @@ Claude Code에서 `/스킬명` 형태로 호출합니다:
 
 ---
 
-## Skills Reference (50개)
+## Skills Reference (51개)
 
 ### Phase 1: 공통 데이터 클라이언트
 
@@ -765,11 +765,25 @@ Fed 기조, 금리 트렌드, 유동성 3축으로 US 통화정책 레짐을 판
 
 **출력**: 지표별 5항목 심층 분석 + 종합 대시보드 (복수 지표 시) + 초보자 한 문장 요약
 
+### Patch: 폭락 후 회복 추적
+
+#### `/kr-recovery-tracker` — 시장 폭락 후 회복 모니터링
+
+7개 핵심 지표(KOSPI, VIX, CNN F&G, USD/KRW, EWY, 외국인 수급, 뉴스 톤)로 급락 이후 회복 진행 상황을 추적하고 5단계 회복 모델로 현재 위치를 판단합니다.
+
+```
+/kr-recovery-tracker
+/kr-recovery-tracker 회복 추적 업데이트
+/kr-recovery-tracker 위기전 KOSPI 6244 바닥 5094
+```
+
+**출력**: 회복 대시보드 + KOSPI 회복률 + 어제 대비 변화 + 뉴스 헤드라인 3개 + 5단계 회복 판단
+
 ---
 
 ## Skill Relationship Map (스킬 연관 관계도)
 
-50개 스킬은 **7개 클러스터 + 1개 크로스커팅 모듈**로 구성되며, 데이터 → 분석 → 선별 → 의사결정 파이프라인을 형성합니다.
+51개 스킬은 **7개 클러스터 + 1개 크로스커팅 모듈**로 구성되며, 데이터 → 분석 → 선별 → 의사결정 파이프라인을 형성합니다.
 
 ### 전체 아키텍처
 
@@ -1098,7 +1112,8 @@ kr-stock-skills/
 │   ├── us-monetary-regime/      # Patch: US 통화정책 레짐 (독립 스킬)
 │   ├── kr-rebound-signal/      # Patch: 급락 시 14개 반등 시그널 체크
 │   ├── kr-crisis-compare/      # Patch: 역사적 위기 비교 패턴
-│   └── kr-indicator-deep-dive/ # Patch: 특정 지표 심층 분석
+│   ├── kr-indicator-deep-dive/ # Patch: 특정 지표 심층 분석
+│   └── kr-recovery-tracker/   # Patch: 폭락 후 회복 추적
 └── docs/                        # PDCA 설계 문서
     ├── 01-plan/
     ├── 02-design/
@@ -1125,8 +1140,9 @@ kr-stock-skills/
 | Patch | US 통화정책 (us-monetary-regime) | 1 | 106 | 97% | Done |
 | Patch | 반등 시그널 (kr-rebound-signal) | 1 | 59 | - | Done |
 | Patch | 위기 비교 (kr-crisis-compare) | 1 | 76 | - | Done |
-| Patch | 지표 심층 (kr-indicator-deep-dive) | 1 | - | - | Done |
-| **Total** | | **50** | **2,105** | | |
+| Patch | 지표 심층 (kr-indicator-deep-dive) | 1 | 33 | - | Done |
+| Patch | 회복 추적 (kr-recovery-tracker) | 1 | 32 | - | Done |
+| **Total** | | **51** | **2,170** | | |
 
 ### Requirements
 
