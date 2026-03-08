@@ -1,0 +1,14 @@
+{
+  "fear": {
+    "ko": ["폭락", "패닉", "서킷브레이커", "위기", "급락", "붕괴", "마진콜", "투매", "폭탄", "공포", "대폭락", "최악", "충격", "급전직하", "블랙"],
+    "en": ["crash", "panic", "plunge", "circuit breaker", "crisis", "rout", "selloff", "sell-off", "meltdown", "collapse", "tumble", "worst", "fear", "carnage", "bloodbath"]
+  },
+  "neutral": {
+    "ko": ["보합", "혼조", "관망", "횡보", "등락", "변동성", "엇갈린", "소폭", "제한적", "불확실"],
+    "en": ["mixed", "flat", "cautious", "volatile", "sideways", "uncertain", "muted", "steady", "unchanged", "choppy"]
+  },
+  "stable": {
+    "ko": ["반등", "회복", "저가매수", "안정화", "대책", "지원", "순매수", "상승", "급등", "역대급 반등", "안정", "저점매수", "긴급지원"],
+    "en": ["rebound", "recovery", "rally", "stabilize", "support", "surge", "bounce", "soar", "gain", "climb", "jump", "upswing", "stimulus"]
+  }
+}
