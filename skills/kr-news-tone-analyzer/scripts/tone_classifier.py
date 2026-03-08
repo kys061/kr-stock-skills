@@ -21,7 +21,7 @@ _REF_DIR = os.path.join(
 _KEYWORDS_PATH = os.path.join(_REF_DIR, 'tone_keywords.json')
 
 
-def load_tone_keywords():
+def load_tone_keywords() -> dict:
     """Load tone keyword dictionaries from references/tone_keywords.json."""
     if not os.path.exists(_KEYWORDS_PATH):
         return _default_keywords()
@@ -29,7 +29,7 @@ def load_tone_keywords():
         return json.load(f)
 
 
-def _default_keywords():
+def _default_keywords() -> dict:
     """Fallback keywords when reference file is missing."""
     return {
         'fear': {
@@ -51,7 +51,7 @@ def _default_keywords():
 # Tone classification
 # ---------------------------------------------------------------------------
 
-def classify_headline(headline, keywords=None):
+def classify_headline(headline: str, keywords: dict | None = None) -> dict:
     """Classify a single headline into fear/neutral/stable.
 
     Args:
@@ -59,7 +59,7 @@ def classify_headline(headline, keywords=None):
         keywords: dict with fear/neutral/stable keyword lists.
 
     Returns:
-        dict with tone, matched_keywords, confidence.
+        dict with keys: tone, matched_keywords, confidence.
     """
     if keywords is None:
         keywords = load_tone_keywords()
@@ -105,7 +105,7 @@ def classify_headline(headline, keywords=None):
     }
 
 
-def classify_headlines(headlines, keywords=None):
+def classify_headlines(headlines: list, keywords: dict | None = None) -> list[dict]:
     """Classify multiple headlines and return individual results.
 
     Args:
@@ -113,7 +113,7 @@ def classify_headlines(headlines, keywords=None):
         keywords: tone keyword dict.
 
     Returns:
-        list of dicts with headline, source, tone, matched_keywords.
+        list of dicts with keys: headline, source, tone, matched_keywords, confidence.
     """
     if keywords is None:
         keywords = load_tone_keywords()
@@ -143,10 +143,10 @@ def classify_headlines(headlines, keywords=None):
 # Tone ratio calculation
 # ---------------------------------------------------------------------------
 
-def calculate_tone_ratio(classified_headlines):
+def calculate_tone_ratio(classified_headlines: list[dict]) -> dict:
     """Calculate tone distribution from classified headlines.
 
-    Returns dict with fear/neutral/stable counts and percentages.
+    Returns dict with keys: fear, neutral, stable (each {count, pct}), total.
     """
     total = len(classified_headlines)
     if total == 0:
@@ -178,15 +178,14 @@ def calculate_tone_ratio(classified_headlines):
 # Transition judgment
 # ---------------------------------------------------------------------------
 
-def judge_transition(tone_ratio):
+def judge_transition(tone_ratio: dict) -> dict:
     """Judge market sentiment transition status.
 
     Args:
         tone_ratio: dict from calculate_tone_ratio().
 
     Returns:
-        dict with status ('fear', 'transitioning', 'stable'),
-        label_ko, reasoning.
+        dict with keys: status ('fear'|'transitioning'|'stable'), label_ko, reasoning.
     """
     stable_pct = tone_ratio['stable']['pct']
     fear_pct = tone_ratio['fear']['pct']
@@ -215,7 +214,7 @@ def judge_transition(tone_ratio):
 # Full analysis
 # ---------------------------------------------------------------------------
 
-def analyze_news_tone(headlines, keywords=None):
+def analyze_news_tone(headlines: list, keywords: dict | None = None) -> dict:
     """Run full news tone analysis pipeline.
 
     Args:
@@ -223,7 +222,7 @@ def analyze_news_tone(headlines, keywords=None):
         keywords: optional keyword dict.
 
     Returns:
-        dict with classified, tone_ratio, transition, summary.
+        dict with keys: classified, tone_ratio, transition, summary.
     """
     classified = classify_headlines(headlines, keywords)
     tone_ratio = calculate_tone_ratio(classified)
@@ -240,6 +239,62 @@ def analyze_news_tone(headlines, keywords=None):
         'transition': transition,
         'summary': summary,
     }
+
+
+# ---------------------------------------------------------------------------
+# Trend analysis
+# ---------------------------------------------------------------------------
+
+def analyze_trend(batches: list[dict]) -> list[dict]:
+    """Analyze tone trend across multiple time-batched headline sets.
+
+    Args:
+        batches: list of dicts with 'label' (time label) and 'headlines' (list).
+
+    Returns:
+        list of dicts with keys: label, tone_ratio, transition.
+    """
+    trend = []
+    for batch in batches:
+        label = batch.get('label', '')
+        headlines = batch.get('headlines', [])
+        classified = classify_headlines(headlines)
+        tone_ratio = calculate_tone_ratio(classified)
+        transition = judge_transition(tone_ratio)
+        trend.append({
+            'label': label,
+            'tone_ratio': tone_ratio,
+            'transition': transition,
+        })
+    return trend
+
+
+# ---------------------------------------------------------------------------
+# Report file saving
+# ---------------------------------------------------------------------------
+
+def save_report(content: str, output_dir: str | None = None) -> str:
+    """Save markdown report to file.
+
+    Args:
+        content: markdown report string.
+        output_dir: directory to save into. Defaults to PROJECT/reports/.
+
+    Returns:
+        absolute path of saved file.
+    """
+    if output_dir is None:
+        output_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(
+                os.path.abspath(__file__)))),
+            'reports')
+    os.makedirs(output_dir, exist_ok=True)
+
+    filename = f"news-tone-analyzer_{datetime.now().strftime('%Y%m%d')}.md"
+    filepath = os.path.join(output_dir, filename)
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(content)
+    return filepath
 
 
 # ---------------------------------------------------------------------------
@@ -272,6 +327,68 @@ DEMO_HEADLINES = [
 ]
 
 
+def _build_markdown_report(analysis: dict) -> str:
+    """Build markdown report string from analysis results."""
+    lines = []
+    now = datetime.now().strftime('%Y-%m-%d %H:%M')
+    lines.append(f"# News Tone Analysis — {now}")
+    lines.append('')
+    lines.append('## 헤드라인 분류')
+    lines.append('')
+    lines.append('| # | 헤드라인 | 소스 | 톤 | 매칭 키워드 |')
+    lines.append('|:-:|---------|------|:--:|-----------|')
+    for i, item in enumerate(analysis['classified'], 1):
+        tone_ko = TONE_LABEL_KO.get(item['tone'], item['tone'])
+        kws = ', '.join(item['matched_keywords'][:3])
+        hl = item['headline'][:60]
+        lines.append(f"| {i} | {hl} | {item['source']} | {tone_ko} | {kws} |")
+
+    lines.append('')
+    lines.append('## 톤 비율')
+    lines.append('')
+    tr = analysis['tone_ratio']
+    lines.append(f"- 공포: {tr['fear']['count']}건 ({tr['fear']['pct']}%)")
+    lines.append(f"- 중립: {tr['neutral']['count']}건 ({tr['neutral']['pct']}%)")
+    lines.append(f"- 안정: {tr['stable']['count']}건 ({tr['stable']['pct']}%)")
+
+    lines.append('')
+    t = analysis['transition']
+    lines.append(f"## 판단: **{t['label_ko']}**")
+    lines.append(f"> {analysis['summary']}")
+
+    return '\n'.join(lines)
+
+
+def _build_trend_report(trend_results: list[dict]) -> str:
+    """Build markdown trend report from time-batched analysis."""
+    lines = []
+    now = datetime.now().strftime('%Y-%m-%d %H:%M')
+    lines.append(f"# News Tone Trend — {now}")
+    lines.append('')
+    lines.append('| 구간 | 공포 | 중립 | 안정 | 판단 |')
+    lines.append('|------|:----:|:----:|:----:|------|')
+    for item in trend_results:
+        tr = item['tone_ratio']
+        label_ko = item['transition']['label_ko']
+        lines.append(
+            f"| {item['label']} | {tr['fear']['pct']}% | "
+            f"{tr['neutral']['pct']}% | {tr['stable']['pct']}% | {label_ko} |")
+
+    if len(trend_results) >= 2:
+        first = trend_results[0]['transition']['status']
+        last = trend_results[-1]['transition']['status']
+        if first == 'fear' and last in ('transitioning', 'stable'):
+            lines.append(f"\n> **추이 판단**: 공포 → {trend_results[-1]['transition']['label_ko']} 전환 감지")
+        elif first == last:
+            lines.append(f"\n> **추이 판단**: {trend_results[-1]['transition']['label_ko']} 상태 지속")
+        else:
+            lines.append(
+                f"\n> **추이 판단**: {trend_results[0]['transition']['label_ko']} → "
+                f"{trend_results[-1]['transition']['label_ko']}")
+
+    return '\n'.join(lines)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='News Tone Classifier — Classify KOSPI/KOSDAQ headlines')
@@ -281,8 +398,14 @@ def main():
                         help='JSON file with headlines list')
     parser.add_argument('--demo', action='store_true',
                         help='Run demo with sample headlines')
+    parser.add_argument('--trend', action='store_true',
+                        help='Analyze tone trend across time batches')
     parser.add_argument('--format', choices=['json', 'markdown'],
                         default='markdown', help='Output format')
+    parser.add_argument('--output-dir', type=str, default=None,
+                        help='Directory to save report (default: reports/)')
+    parser.add_argument('--no-save', action='store_true',
+                        help='Print only, do not save report file')
     args = parser.parse_args()
 
     keywords = load_tone_keywords()
@@ -299,44 +422,38 @@ def main():
 
     if args.headlines_file:
         with open(args.headlines_file, 'r', encoding='utf-8') as f:
-            headlines = json.load(f)
+            data = json.load(f)
     elif args.demo:
-        headlines = DEMO_HEADLINES
+        data = DEMO_HEADLINES
     else:
         print("ERROR: --headline, --headlines-file, or --demo required",
               file=sys.stderr)
         sys.exit(1)
 
-    analysis = analyze_news_tone(headlines, keywords)
-
-    if args.format == 'json':
-        print(json.dumps(analysis, ensure_ascii=False, indent=2, default=str))
+    # --trend mode: expects list of {label, headlines} batches
+    if args.trend:
+        if isinstance(data, list) and data and isinstance(data[0], dict) and 'headlines' in data[0]:
+            batches = data
+        else:
+            # Wrap single list as one batch
+            batches = [{'label': '현재', 'headlines': data}]
+        trend_results = analyze_trend(batches)
+        if args.format == 'json':
+            output = json.dumps(trend_results, ensure_ascii=False, indent=2, default=str)
+        else:
+            output = _build_trend_report(trend_results)
     else:
-        now = datetime.now().strftime('%Y-%m-%d %H:%M')
-        print(f"# News Tone Analysis — {now}")
-        print()
-        print("## 헤드라인 분류")
-        print()
-        print("| # | 헤드라인 | 소스 | 톤 | 매칭 키워드 |")
-        print("|:-:|---------|------|:--:|-----------|")
-        for i, item in enumerate(analysis['classified'], 1):
-            tone_ko = TONE_LABEL_KO.get(item['tone'], item['tone'])
-            kws = ', '.join(item['matched_keywords'][:3])
-            print(f"| {i} | {item['headline'][:50]}... | "
-                  f"{item['source']} | {tone_ko} | {kws} |")
+        analysis = analyze_news_tone(data, keywords)
+        if args.format == 'json':
+            output = json.dumps(analysis, ensure_ascii=False, indent=2, default=str)
+        else:
+            output = _build_markdown_report(analysis)
 
-        print()
-        print("## 톤 비율")
-        print()
-        tr = analysis['tone_ratio']
-        print(f"- 공포: {tr['fear']['count']}건 ({tr['fear']['pct']}%)")
-        print(f"- 중립: {tr['neutral']['count']}건 ({tr['neutral']['pct']}%)")
-        print(f"- 안정: {tr['stable']['count']}건 ({tr['stable']['pct']}%)")
+    print(output)
 
-        print()
-        t = analysis['transition']
-        print(f"## 판단: **{t['label_ko']}**")
-        print(f"> {analysis['summary']}")
+    if not args.no_save and args.format == 'markdown':
+        filepath = save_report(output, args.output_dir)
+        print(f"\n---\n리포트 저장: {filepath}")
 
 
 if __name__ == '__main__':

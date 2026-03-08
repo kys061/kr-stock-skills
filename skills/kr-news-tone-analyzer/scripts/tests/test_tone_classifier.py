@@ -8,7 +8,9 @@ Test coverage:
   TestJudgeTransition (4): stable, transitioning, fear, edge_case
   TestAnalyzeNewsTone (2): demo, minimal
   TestLoadToneKeywords (2): existing, missing
-  Total: 23 tests
+  TestAnalyzeTrend (3): multi_batch, single_wrap, empty
+  TestSaveReport (2): default_dir, custom_dir
+  Total: 28 tests
 """
 
 import json
@@ -25,6 +27,8 @@ from tone_classifier import (
     calculate_tone_ratio,
     judge_transition,
     analyze_news_tone,
+    analyze_trend,
+    save_report,
     load_tone_keywords,
     TONE_LABEL_KO,
     DEMO_HEADLINES,
@@ -258,3 +262,67 @@ class TestLoadToneKeywords:
         result = mod.load_tone_keywords()
         assert 'fear' in result
         assert 'stable' in result
+
+
+# ---------------------------------------------------------------------------
+# TestAnalyzeTrend
+# ---------------------------------------------------------------------------
+
+class TestAnalyzeTrend:
+    """T-24 ~ T-26: Trend analysis tests."""
+
+    def test_multi_batch(self):
+        """T-24: Multiple time batches produce trend results."""
+        batches = [
+            {'label': 'Day 1', 'headlines': [
+                {'headline': '코스피 폭락', 'source': 'A'},
+                {'headline': '패닉 매도', 'source': 'B'},
+            ]},
+            {'label': 'Day 2', 'headlines': [
+                {'headline': '코스피 반등', 'source': 'C'},
+                {'headline': '회복 기대감', 'source': 'D'},
+            ]},
+        ]
+        result = analyze_trend(batches)
+        assert len(result) == 2
+        assert result[0]['label'] == 'Day 1'
+        assert result[0]['transition']['status'] == 'fear'
+        assert result[1]['label'] == 'Day 2'
+        assert result[1]['transition']['status'] == 'stable'
+
+    def test_single_wrap(self):
+        """T-25: Single batch works correctly."""
+        batches = [{'label': '현재', 'headlines': DEMO_HEADLINES}]
+        result = analyze_trend(batches)
+        assert len(result) == 1
+        assert result[0]['tone_ratio']['total'] == len(DEMO_HEADLINES)
+
+    def test_empty_batch(self):
+        """T-26: Empty batches list returns empty."""
+        result = analyze_trend([])
+        assert result == []
+
+
+# ---------------------------------------------------------------------------
+# TestSaveReport
+# ---------------------------------------------------------------------------
+
+class TestSaveReport:
+    """T-27 ~ T-28: Report file saving tests."""
+
+    def test_save_to_custom_dir(self, tmp_path):
+        """T-27: Save report to custom directory."""
+        content = "# Test Report\nSample content"
+        filepath = save_report(content, str(tmp_path))
+        assert os.path.exists(filepath)
+        assert filepath.startswith(str(tmp_path))
+        with open(filepath, 'r', encoding='utf-8') as f:
+            assert f.read() == content
+
+    def test_creates_directory(self, tmp_path):
+        """T-28: Auto-creates output directory if missing."""
+        target = str(tmp_path / 'new_subdir')
+        assert not os.path.exists(target)
+        filepath = save_report("test", target)
+        assert os.path.exists(filepath)
+        assert os.path.isdir(target)
