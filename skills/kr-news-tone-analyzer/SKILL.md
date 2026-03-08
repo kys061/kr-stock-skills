@@ -193,21 +193,10 @@ python3 tone_classifier.py --demo  # 데모 실행 (내장 샘플)
 | kr-market-news-analyst | 개별 이벤트 임팩트 1-10 스코어 | 10일 | 이벤트별 영향도 |
 | **kr-news-tone-analyzer** | **헤드라인 톤 비율 + 전환 판단** | **24시간** | **공포/중립/안정 비율** |
 
-## Output Rule (마크다운 리포트 저장 + 이메일 발송)
+## Output Rule (마크다운 리포트 저장)
 
 - **템플릿**: `_kr_common/templates/report_macro.md` 구조를 따른다
 - **공통 규칙**: `_kr_common/templates/report_rules.md` 참조
 - 저장 경로: `reports/news-tone-analyzer_{YYYYMMDD}.md`
 - `reports/` 디렉토리가 없으면 자동 생성
 - 동일 파일명이 존재하면 덮어쓰기 (같은 날 재분석 시)
-
-### 이메일 자동 발송 (필수)
-
-리포트 MD 파일 저장 후 **반드시** 이메일을 발송한다:
-
-```bash
-cd ~/stock && python3 skills/_kr_common/utils/email_sender.py "reports/news-tone-analyzer_{YYYYMMDD}.md" "kr-news-tone-analyzer"
-```
-
-- `.env`의 `EMAIL_ENABLED=true` 설정 시 자동 발송
-- 발송 실패 시에도 리포트 생성은 정상 완료로 간주 (fail-safe)
