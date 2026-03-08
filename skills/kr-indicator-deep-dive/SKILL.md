@@ -166,6 +166,32 @@ description: 주요 시장 지표(VIX/CNN F&G/EWY/KOSPI RSI/USD-KRW/HY OAS/Put-C
 | 🟠 | 주의/약한 공포 | F&G Fear, VIX 30~40 |
 | 🔴 | 위험/강한 공포 | RSI<20, VKOSPI 60+, VIX 40+ |
 
+## 스크립트 실행 (1순위)
+
+yfinance로 자동 수집 가능한 4개 지표(VIX, EWY, USD/KRW, KOSPI RSI)를 먼저 수집한다.
+
+```bash
+cd ~/stock/skills/kr-indicator-deep-dive/scripts
+python3 indicator_fetcher.py                        # 전체 4개 지표
+python3 indicator_fetcher.py --indicators VIX KOSPI # 특정 지표만
+python3 indicator_fetcher.py --format json          # JSON 출력
+```
+
+나머지 4개 지표(CNN F&G, HY OAS, Put/Call, VKOSPI)는 WebSearch로 보완한다.
+
+### 정적 참조 데이터
+
+`references/historical_extremes.json`에 7개 지표의 역대 극단값 Top 5를 보관한다.
+스크립트가 자동 로드하여 분석에 활용.
+
+### 오류 핸들링
+
+| 상황 | 대응 |
+|------|------|
+| yfinance 타임아웃 | 해당 지표 `error` 표시, 나머지 계속 수집 |
+| 데이터 부족 (< 2일) | `Insufficient data` 반환, RSI 계산 생략 |
+| references 파일 누락 | 빈 dict 반환, 극단값 없이 분석 계속 |
+
 ## 실행 방법
 
 ```
