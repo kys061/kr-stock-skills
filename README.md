@@ -1,6 +1,6 @@
 # Korean Stock Trading Skills for Claude Code
 
-한국 주식 시장(KOSPI/KOSDAQ) 분석을 위한 Claude Code 플러그인. 49개 전문 스킬로 시장 분석, 종목 스크리닝, 전략 수립, 포트폴리오 관리까지 워크플로우를 제공합니다.
+한국 주식 시장(KOSPI/KOSDAQ) 분석을 위한 Claude Code 플러그인. 50개 전문 스킬로 시장 분석, 종목 스크리닝, 전략 수립, 포트폴리오 관리까지 워크플로우를 제공합니다.
 
 > **Tier 0**: KRX Open API (인증키 기반, 일 10,000회)
 > **Tier 1**: yfinance — 무료, 무제한, OHLCV+재무+밸류에이션 (즉시 가용)
@@ -62,7 +62,7 @@ Claude Code에서 `/스킬명` 형태로 호출합니다:
 
 ---
 
-## Skills Reference (49개)
+## Skills Reference (50개)
 
 ### Phase 1: 공통 데이터 클라이언트
 
@@ -750,9 +750,26 @@ Fed 기조, 금리 트렌드, 유동성 3축으로 US 통화정책 레짐을 판
 
 ---
 
+### Patch: 특정 지표 심층 분석
+
+#### `/kr-indicator-deep-dive` — 시장 지표 심층 해부
+
+주요 시장 지표(VIX, CNN F&G, EWY, KOSPI RSI, USD/KRW, HY OAS, Put/Call, VKOSPI)를 개별 5가지 항목(현재 수치, 역대 극단값, 역사적 위치, 이후 수익률, 한 문장 요약)으로 심층 분석합니다.
+
+```
+/kr-indicator-deep-dive
+/kr-indicator-deep-dive VIX 심층 분석해줘
+/kr-indicator-deep-dive VIX CNN공포탐욕 KOSPI RSI 분석
+/kr-indicator-deep-dive 전체 8개 지표 심층 분석
+```
+
+**출력**: 지표별 5항목 심층 분석 + 종합 대시보드 (복수 지표 시) + 초보자 한 문장 요약
+
+---
+
 ## Skill Relationship Map (스킬 연관 관계도)
 
-49개 스킬은 **7개 클러스터 + 1개 크로스커팅 모듈**로 구성되며, 데이터 → 분석 → 선별 → 의사결정 파이프라인을 형성합니다.
+50개 스킬은 **7개 클러스터 + 1개 크로스커팅 모듈**로 구성되며, 데이터 → 분석 → 선별 → 의사결정 파이프라인을 형성합니다.
 
 ### 전체 아키텍처
 
@@ -1080,7 +1097,8 @@ kr-stock-skills/
 │   ├── kr-growth-outlook/       # Patch: 6-컴포넌트 성장성 전망
 │   ├── us-monetary-regime/      # Patch: US 통화정책 레짐 (독립 스킬)
 │   ├── kr-rebound-signal/      # Patch: 급락 시 14개 반등 시그널 체크
-│   └── kr-crisis-compare/      # Patch: 역사적 위기 비교 패턴
+│   ├── kr-crisis-compare/      # Patch: 역사적 위기 비교 패턴
+│   └── kr-indicator-deep-dive/ # Patch: 특정 지표 심층 분석
 └── docs/                        # PDCA 설계 문서
     ├── 01-plan/
     ├── 02-design/
@@ -1107,7 +1125,8 @@ kr-stock-skills/
 | Patch | US 통화정책 (us-monetary-regime) | 1 | 106 | 97% | Done |
 | Patch | 반등 시그널 (kr-rebound-signal) | 1 | 59 | - | Done |
 | Patch | 위기 비교 (kr-crisis-compare) | 1 | 76 | - | Done |
-| **Total** | | **49** | **2,105** | | |
+| Patch | 지표 심층 (kr-indicator-deep-dive) | 1 | - | - | Done |
+| **Total** | | **50** | **2,105** | | |
 
 ### Requirements
 

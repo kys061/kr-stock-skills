@@ -107,6 +107,7 @@ Sources:
 | kr-weekly-strategy | report_macro.md |
 | kr-scenario-analyzer | report_macro.md |
 | kr-sector-analyst | report_macro.md |
+| kr-indicator-deep-dive | report_macro.md |
 | 기타 개별 종목 분석 | report_stock.md |
 | 기타 시장 분석 | report_macro.md |
 
