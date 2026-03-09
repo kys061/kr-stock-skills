@@ -1,0 +1,57 @@
+{
+  "version": "2.0",
+  "lastUpdated": "2026-03-09T18:00:00.000Z",
+  "activeFeatures": ["kr-morning-briefing"],
+  "primaryFeature": "kr-morning-briefing",
+  "features": {
+    "kr-morning-briefing": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [
+        "글로벌 시장 현황 27개 항목 (yfinance 17 + WebSearch 10)",
+        "당월 주요 일정 체크리스트 (정적 + 동적)",
+        "장 초반 핫 키워드 2-3개 + 관련주 + 한줄평"
+      ],
+      "documents": {
+        "plan": "docs/01-plan/features/kr-morning-briefing.plan.md",
+        "design": "docs/02-design/features/kr-morning-briefing.design.md"
+      },
+      "timestamps": {
+        "started": "2026-03-09T18:00:00.000Z",
+        "lastUpdated": "2026-03-09T18:00:00.000Z"
+      }
+    }
+  },
+  "pipeline": {
+    "currentPhase": 1,
+    "level": "Dynamic",
+    "phaseHistory": []
+  },
+  "session": {
+    "startedAt": "2026-03-09T18:00:00.000Z",
+    "onboardingCompleted": true,
+    "lastActivity": "2026-03-09T18:00:00.000Z"
+  },
+  "history": [
+    {
+      "timestamp": "2026-03-09T18:00:00.000Z",
+      "feature": "kr-morning-briefing",
+      "phase": "plan",
+      "action": "created"
+    },
+    {
+      "timestamp": "2026-03-09T19:00:00.000Z",
+      "feature": "kr-morning-briefing",
+      "phase": "design",
+      "action": "created"
+    },
+    {
+      "timestamp": "2026-03-10T00:00:00.000Z",
+      "feature": "kr-morning-briefing",
+      "phase": "do",
+      "action": "completed"
+    }
+  ]
+}

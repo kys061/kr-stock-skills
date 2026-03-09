@@ -1,6 +1,6 @@
 # Korean Stock Trading Skills for Claude Code
 
-한국 주식 시장(KOSPI/KOSDAQ) 분석을 위한 Claude Code 플러그인. 54개 전문 스킬로 시장 분석, 종목 스크리닝, 전략 수립, 포트폴리오 관리까지 워크플로우를 제공합니다.
+한국 주식 시장(KOSPI/KOSDAQ) 분석을 위한 Claude Code 플러그인. 55개 전문 스킬로 시장 분석, 종목 스크리닝, 전략 수립, 포트폴리오 관리까지 워크플로우를 제공합니다.
 
 > **Tier 0**: KRX Open API (인증키 기반, 일 10,000회)
 > **Tier 1**: yfinance — 무료, 무제한, OHLCV+재무+밸류에이션 (즉시 가용)
@@ -62,7 +62,7 @@ Claude Code에서 `/스킬명` 형태로 호출합니다:
 
 ---
 
-## Skills Reference (54개)
+## Skills Reference (55개)
 
 ### Phase 1: 공통 데이터 클라이언트
 
@@ -740,6 +740,20 @@ Fed 기조, 금리 트렌드, 유동성 3축으로 US 통화정책 레짐을 판
 
 ---
 
+#### `/kr-morning-briefing` — 장 초반 종합 브리핑
+
+KST 08:00~09:00 실행. 글로벌 시장 현황(27개 항목) + 당월 주요 일정 + 핫 키워드 2-3개를 하나의 리포트로 제공합니다.
+
+```
+/kr-morning-briefing
+```
+
+**출력**: 8개 카테고리 시장 데이터(미국지수/환율/국채/유가/안전자산/광물/농산물/운임) + 월간 일정 체크리스트 + 핫 키워드 관련주 + 한줄평
+
+**데이터**: yfinance 17개 + WebSearch 10개 = 27개 항목 | 2분 이내 완료
+
+---
+
 ### Patch: 폭락 반등 시그널 체크
 
 #### `/kr-rebound-signal` — 급락 시 14개 반등 시그널 체크
@@ -823,7 +837,7 @@ Fed 기조, 금리 트렌드, 유동성 3축으로 US 통화정책 레짐을 판
 
 ## Skill Relationship Map (스킬 연관 관계도)
 
-54개 스킬은 **7개 클러스터 + 1개 크로스커팅 모듈**로 구성되며, 데이터 → 분석 → 선별 → 의사결정 파이프라인을 형성합니다.
+55개 스킬은 **7개 클러스터 + 1개 크로스커팅 모듈**로 구성되며, 데이터 → 분석 → 선별 → 의사결정 파이프라인을 형성합니다.
 
 ### 전체 아키텍처
 
@@ -992,7 +1006,7 @@ flowchart LR
 
 다른 스킬의 선행 실행 없이 단독으로 사용할 수 있는 스킬:
 
-`stock-screener` · `pair-trade` · `options-advisor` · `bubble-detector` · `credit-monitor` · `short-sale-tracker` · `institutional-flow` · `technical-analyst` · `market-news-analyst` · `daily-market-check` · `dart-disclosure-monitor` · `skill-reviewer`
+`stock-screener` · `pair-trade` · `options-advisor` · `bubble-detector` · `credit-monitor` · `short-sale-tracker` · `institutional-flow` · `technical-analyst` · `market-news-analyst` · `daily-market-check` · `morning-briefing` · `dart-disclosure-monitor` · `skill-reviewer`
 
 ---
 
@@ -1156,7 +1170,8 @@ kr-stock-skills/
 │   ├── kr-crisis-compare/      # Patch: 역사적 위기 비교 패턴
 │   ├── kr-indicator-deep-dive/ # Patch: 특정 지표 심층 분석
 │   ├── kr-recovery-tracker/   # Patch: 폭락 후 회복 추적
-│   └── kr-news-tone-analyzer/ # Patch: 뉴스 톤 분석
+│   ├── kr-news-tone-analyzer/ # Patch: 뉴스 톤 분석
+│   └── kr-morning-briefing/  # 장 초반 종합 브리핑
 └── docs/                        # PDCA 설계 문서
     ├── 01-plan/
     ├── 02-design/
@@ -1186,7 +1201,8 @@ kr-stock-skills/
 | Patch | 지표 심층 (kr-indicator-deep-dive) | 1 | 33 | - | Done |
 | Patch | 회복 추적 (kr-recovery-tracker) | 1 | 32 | - | Done |
 | Patch | 뉴스 톤 (kr-news-tone-analyzer) | 1 | 23 | - | Done |
-| **Total** | | **52** | **2,193** | | |
+| New | 장초반 브리핑 (kr-morning-briefing) | 1 | 78 | - | Done |
+| **Total** | | **53** | **2,271** | | |
 
 ### Requirements
 

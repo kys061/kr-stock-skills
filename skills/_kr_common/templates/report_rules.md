@@ -111,6 +111,7 @@ Sources:
 | kr-recovery-tracker | report_macro.md |
 | kr-news-tone-analyzer | report_macro.md |
 | 기타 개별 종목 분석 | report_stock.md |
+| kr-morning-briefing | report_macro.md |
 | 기타 시장 분석 | report_macro.md |
 
 ## 8. 이메일 발송 (선택)
