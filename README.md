@@ -1,6 +1,6 @@
 # Korean Stock Trading Skills for Claude Code
 
-한국 주식 시장(KOSPI/KOSDAQ) 분석을 위한 Claude Code 플러그인. 52개 전문 스킬로 시장 분석, 종목 스크리닝, 전략 수립, 포트폴리오 관리까지 워크플로우를 제공합니다.
+한국 주식 시장(KOSPI/KOSDAQ) 분석을 위한 Claude Code 플러그인. 54개 전문 스킬로 시장 분석, 종목 스크리닝, 전략 수립, 포트폴리오 관리까지 워크플로우를 제공합니다.
 
 > **Tier 0**: KRX Open API (인증키 기반, 일 10,000회)
 > **Tier 1**: yfinance — 무료, 무제한, OHLCV+재무+밸류에이션 (즉시 가용)
@@ -62,7 +62,7 @@ Claude Code에서 `/스킬명` 형태로 호출합니다:
 
 ---
 
-## Skills Reference (52개)
+## Skills Reference (54개)
 
 ### Phase 1: 공통 데이터 클라이언트
 
@@ -253,7 +253,7 @@ KOSPI/KOSDAQ 이중 지수에서 William O'Neil의 FTD 신호를 탐지합니다
 
 ---
 
-### Phase 4: 종목 스크리닝 (7개)
+### Phase 4: 종목 스크리닝 (9개)
 
 #### `/kr-stock-screener` — 다조건 필터 스크리닝
 
@@ -340,6 +340,32 @@ Mark Minervini의 Stage 2 업트렌드 + VCP(Volatility Contraction Pattern)를 
 /kr-pair-trade 삼성전자 SK하이닉스 페어 분석
 /kr-pair-trade 포스코홀딩스 포스코퓨처엠 스프레드 분석
 ```
+
+---
+
+#### `/kr-ichimoku-filter` — 일목균형표 전환선 필터
+
+일봉 기준 종가가 전환선(9일) 위에서 마감했는지 확인합니다. 스크리너 스킬의 추가 확인 지표로 활용됩니다.
+
+```
+/kr-ichimoku-filter 삼성전자
+/kr-ichimoku-filter 005930 일목균형표 전환선 확인
+```
+
+**판정**: Close > 전환선 = PASS (단기 상승 모멘텀 유지)
+
+---
+
+#### `/kr-stochastic-filter` — Stochastic Slow 필터
+
+Stochastic Slow (18,10,10) 기반 모멘텀 확인 필터. Slow %K >= Slow %D 조건을 판정합니다.
+
+```
+/kr-stochastic-filter 삼성전자
+/kr-stochastic-filter 005930 스토캐스틱 확인
+```
+
+**판정**: Slow %K >= Slow %D = PASS | 과매수/중립/과매도 영역 표시
 
 ---
 
@@ -797,7 +823,7 @@ Fed 기조, 금리 트렌드, 유동성 3축으로 US 통화정책 레짐을 판
 
 ## Skill Relationship Map (스킬 연관 관계도)
 
-52개 스킬은 **7개 클러스터 + 1개 크로스커팅 모듈**로 구성되며, 데이터 → 분석 → 선별 → 의사결정 파이프라인을 형성합니다.
+54개 스킬은 **7개 클러스터 + 1개 크로스커팅 모듈**로 구성되며, 데이터 → 분석 → 선별 → 의사결정 파이프라인을 형성합니다.
 
 ### 전체 아키텍처
 
@@ -1090,7 +1116,9 @@ kr-stock-skills/
 │   ├── kr-ftd-detector/
 │   ├── kr-market-top-detector/
 │   ├── kr-macro-regime/
-│   ├── kr-stock-screener/       # Phase 4: 종목 스크리닝 (7개)
+│   ├── kr-ichimoku-filter/       # Phase 4: 종목 스크리닝 (9개)
+│   ├── kr-stochastic-filter/
+│   ├── kr-stock-screener/
 │   ├── kr-canslim-screener/
 │   ├── kr-vcp-screener/
 │   ├── kr-value-dividend/
@@ -1145,7 +1173,7 @@ kr-stock-skills/
 | 1 | 공통 모듈 (`_kr_common`) | 1 | 25 | 91% | Done |
 | 2 | 시장 분석 스킬 | 7 | 101 | 92% | Done |
 | 3 | 마켓 타이밍 스킬 | 5 | 202 | 97% | Done |
-| 4 | 종목 스크리닝 스킬 | 7 | 250 | 97% | Done |
+| 4 | 종목 스크리닝 스킬 | 9 | 283 | 97% | Done |
 | 5 | 캘린더 & 실적 분석 스킬 | 4 | 139 | 97% | Done |
 | 6 | 전략 & 리스크 관리 스킬 | 9 | 330 | 97% | Done |
 | 7 | 배당 & 세제 최적화 스킬 | 3 | 217 | 97% | Done |

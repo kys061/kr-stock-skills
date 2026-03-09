@@ -111,6 +111,78 @@ def stochastic(high: pd.Series, low: pd.Series, close: pd.Series,
     return pd.DataFrame({'%K': k, '%D': d})
 
 
+def stochastic_slow(high: pd.Series, low: pd.Series, close: pd.Series,
+                    k_period: int = 18, slow_k_period: int = 10,
+                    slow_d_period: int = 10) -> pd.DataFrame:
+    """스토캐스틱 슬로우 (Stochastic Slow).
+
+    Fast %K를 slow_k_period으로 평활화한 Slow %K와
+    Slow %K를 slow_d_period으로 평활화한 Slow %D를 계산.
+
+    Args:
+        high: 고가 시계열
+        low: 저가 시계열
+        close: 종가 시계열
+        k_period: Fast %K 기간 (기본 18)
+        slow_k_period: Slow %K 평활 기간 (기본 10)
+        slow_d_period: Slow %D 평활 기간 (기본 10)
+
+    Returns:
+        DataFrame(columns=['Slow%K', 'Slow%D'])
+    """
+    lowest = low.rolling(window=k_period).min()
+    highest = high.rolling(window=k_period).max()
+
+    fast_k = ((close - lowest) / (highest - lowest)) * 100
+    slow_k = sma(fast_k, slow_k_period)
+    slow_d = sma(slow_k, slow_d_period)
+
+    return pd.DataFrame({'Slow%K': slow_k, 'Slow%D': slow_d})
+
+
+def ichimoku(high: pd.Series, low: pd.Series, close: pd.Series,
+             tenkan_period: int = 9, kijun_period: int = 26,
+             senkou_b_period: int = 52) -> pd.DataFrame:
+    """일목균형표 (Ichimoku Kinko Hyo).
+
+    Args:
+        high: 고가 시계열
+        low: 저가 시계열
+        close: 종가 시계열
+        tenkan_period: 전환선 기간 (기본 9)
+        kijun_period: 기준선 기간 (기본 26)
+        senkou_b_period: 선행스팬B 기간 (기본 52)
+
+    Returns:
+        DataFrame(columns=['Tenkan', 'Kijun', 'SenkouA', 'SenkouB', 'Chikou'])
+        - Tenkan: 전환선 (9일 고저 중값)
+        - Kijun: 기준선 (26일 고저 중값)
+        - SenkouA: 선행스팬A ((전환선+기준선)/2, 26일 선행)
+        - SenkouB: 선행스팬B (52일 고저 중값, 26일 선행)
+        - Chikou: 후행스팬 (종가, 26일 후행)
+    """
+    tenkan = (high.rolling(window=tenkan_period).max()
+              + low.rolling(window=tenkan_period).min()) / 2
+
+    kijun = (high.rolling(window=kijun_period).max()
+             + low.rolling(window=kijun_period).min()) / 2
+
+    senkou_a = ((tenkan + kijun) / 2).shift(kijun_period)
+
+    senkou_b = ((high.rolling(window=senkou_b_period).max()
+                 + low.rolling(window=senkou_b_period).min()) / 2).shift(kijun_period)
+
+    chikou = close.shift(-kijun_period)
+
+    return pd.DataFrame({
+        'Tenkan': tenkan,
+        'Kijun': kijun,
+        'SenkouA': senkou_a,
+        'SenkouB': senkou_b,
+        'Chikou': chikou,
+    })
+
+
 def williams_r(high: pd.Series, low: pd.Series, close: pd.Series,
                period: int = 14) -> pd.Series:
     """윌리엄스 %R."""
