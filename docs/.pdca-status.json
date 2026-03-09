@@ -5,9 +5,9 @@
   "primaryFeature": "kr-morning-briefing",
   "features": {
     "kr-morning-briefing": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
+      "phase": "check",
+      "phaseNumber": 4,
+      "matchRate": 97,
       "iterationCount": 0,
       "requirements": [
         "글로벌 시장 현황 27개 항목 (yfinance 17 + WebSearch 10)",
@@ -16,7 +16,8 @@
       ],
       "documents": {
         "plan": "docs/01-plan/features/kr-morning-briefing.plan.md",
-        "design": "docs/02-design/features/kr-morning-briefing.design.md"
+        "design": "docs/02-design/features/kr-morning-briefing.design.md",
+        "analysis": "docs/03-analysis/features/kr-morning-briefing.analysis.md"
       },
       "timestamps": {
         "started": "2026-03-09T18:00:00.000Z",
@@ -52,6 +53,13 @@
       "feature": "kr-morning-briefing",
       "phase": "do",
       "action": "completed"
+    },
+    {
+      "timestamp": "2026-03-10T01:00:00.000Z",
+      "feature": "kr-morning-briefing",
+      "phase": "check",
+      "action": "completed",
+      "matchRate": 97
     }
   ]
 }
