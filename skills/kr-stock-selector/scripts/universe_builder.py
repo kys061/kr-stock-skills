@@ -21,6 +21,9 @@ logger = logging.getLogger(__name__)
 CONFIG_PATH = os.path.join(
     os.path.dirname(__file__), '..', 'references', 'selector_config.json'
 )
+SECTOR_MAP_PATH = os.path.join(
+    os.path.dirname(__file__), '..', 'references', 'sector_map.json'
+)
 
 # 시장별 yfinance 접미사
 MARKET_SUFFIX = {'KOSPI': '.KS', 'KOSDAQ': '.KQ'}
@@ -295,15 +298,48 @@ def _resolve_korean_names(universe: list[dict]) -> None:
         logger.info(f"한글명 변환: {resolved}/{len(universe)}개")
 
 
-def resolve_sectors(items: list[dict], max_workers: int = 20) -> None:
-    """섹터 미분류 종목의 섹터를 yfinance Ticker.info로 보완 (in-place).
+def _load_sector_map() -> dict[str, str]:
+    """정적 섹터 매핑 파일 로드."""
+    if not os.path.exists(SECTOR_MAP_PATH):
+        return {}
+    try:
+        with open(SECTOR_MAP_PATH, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return {k: v for k, v in data.items() if not k.startswith('_')}
+    except Exception:
+        return {}
 
-    병렬 처리로 빠르게 조회. 통과/Watch 종목 등 소수에만 호출 권장.
+
+def resolve_sectors(items: list[dict], max_workers: int = 20) -> None:
+    """섹터 미분류 종목의 섹터를 보완 (in-place).
+
+    1차: sector_map.json 정적 매핑
+    2차: yfinance Ticker.info 병렬 조회
+    통과/Watch 종목 등 소수에만 호출 권장.
     """
     missing = [s for s in items if not s.get('sector') or s['sector'] == '미분류']
     if not missing:
         return
 
+    # 1차: 정적 매핑
+    static_map = _load_sector_map()
+    still_missing = []
+    static_resolved = 0
+    for item in missing:
+        sector = static_map.get(item['ticker'], '')
+        if sector:
+            item['sector'] = sector
+            static_resolved += 1
+        else:
+            still_missing.append(item)
+
+    if static_resolved:
+        logger.info(f"섹터 정적매핑: {static_resolved}/{len(missing)}개")
+
+    if not still_missing:
+        return
+
+    # 2차: yfinance Ticker.info
     try:
         import yfinance as yf
         from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -318,7 +354,7 @@ def resolve_sectors(items: list[dict], max_workers: int = 20) -> None:
             return yf_ticker, ''
 
     yf_map = {s.get('yf_ticker', to_yf_ticker(s['ticker'], s.get('market', 'KOSPI'))): s
-              for s in missing}
+              for s in still_missing}
 
     sector_map = {}
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
@@ -327,15 +363,15 @@ def resolve_sectors(items: list[dict], max_workers: int = 20) -> None:
             sym, en_sector = future.result()
             sector_map[sym] = SECTOR_KR.get(en_sector, en_sector) if en_sector else ''
 
-    resolved = 0
+    yf_resolved = 0
     for sym, item in yf_map.items():
         kr_sector = sector_map.get(sym, '')
         item['sector'] = kr_sector or '미분류'
         if kr_sector:
-            resolved += 1
+            yf_resolved += 1
 
-    if resolved:
-        logger.info(f"섹터 보완: {resolved}/{len(missing)}개")
+    if yf_resolved:
+        logger.info(f"섹터 yfinance: {yf_resolved}/{len(still_missing)}개")
 
 
 def _get_etf_holdings(yf, market: str) -> list[str]:
