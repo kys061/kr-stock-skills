@@ -346,15 +346,26 @@
     ]
   },
   "kr-stock-selector": {
-    "phase": "plan",
+    "phase": "do",
     "matchRate": null,
     "iterationCount": 0,
     "startedAt": "2026-03-11T09:00:00Z",
+    "phaseNumber": 3,
     "history": [
       {
         "action": "plan_created",
         "timestamp": "2026-03-11T09:00:00Z",
         "details": "주식종목선별 5조건(200MA추세20일/4중정배열/52주저가+30%/52주고가-25%/시총1000억) 자동 스크리닝 스킬 Plan 작성. 유니버스빌더+트렌드분석기+리포트생성기 3모듈. ~910 LOC, 22+ 테스트."
+      },
+      {
+        "action": "design_created",
+        "timestamp": "2026-03-11T10:00:00Z",
+        "details": "상세 설계 완료. 4모듈(universe_builder/trend_analyzer/report_generator/orchestrator), UniverseStock/AnalysisResult 데이터 구조, 3단계 폴백(KRX→yfinance→pykrx), 23+ 테스트 목표."
+      },
+      {
+        "action": "do_completed",
+        "timestamp": "2026-03-11T12:00:00Z",
+        "details": "구현 완료. 5개 모듈 + 1개 참조파일 + 3개 테스트파일 + SKILL.md = 10 파일. 53/53 테스트 통과 (설계 23+ 대비 230%). 5조건 판정, 3단계 유니버스 폴백, 3단계 OHLCV 폴백, Watch List(4/5) 지원."
       }
     ]
   }

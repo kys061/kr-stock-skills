@@ -106,8 +106,8 @@ cd skills/{skill_name}/scripts && python -m pytest tests/ -v
 
 ## 현재 상태
 
-- 총 56개 스킬 (Phase 1-9 + 9 Patch + 2 Filter + 1 Briefing + 1 Dashboard)
-- 누적 2,134+ 테스트
+- 총 57개 스킬 (Phase 1-9 + 9 Patch + 2 Filter + 1 Briefing + 1 Dashboard + 1 Selector)
+- 누적 2,452+ 테스트
 
 ---
 

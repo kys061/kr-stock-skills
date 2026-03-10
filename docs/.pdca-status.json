@@ -50,8 +50,8 @@
       }
     },
     "kr-stock-selector": {
-      "phase": "plan",
-      "phaseNumber": 1,
+      "phase": "design",
+      "phaseNumber": 2,
       "matchRate": 0,
       "iterationCount": 0,
       "requirements": [
@@ -62,11 +62,12 @@
         "통과 종목 리스트 + Watch List 리포트 생성"
       ],
       "documents": {
-        "plan": "docs/01-plan/features/kr-stock-selector.plan.md"
+        "plan": "docs/01-plan/features/kr-stock-selector.plan.md",
+        "design": "docs/02-design/features/kr-stock-selector.design.md"
       },
       "timestamps": {
         "started": "2026-03-11T09:00:00.000Z",
-        "lastUpdated": "2026-03-11T09:00:00.000Z"
+        "lastUpdated": "2026-03-11T10:00:00.000Z"
       }
     }
   },
@@ -141,6 +142,12 @@
       "timestamp": "2026-03-11T09:00:00.000Z",
       "feature": "kr-stock-selector",
       "phase": "plan",
+      "action": "created"
+    },
+    {
+      "timestamp": "2026-03-11T10:00:00.000Z",
+      "feature": "kr-stock-selector",
+      "phase": "design",
       "action": "created"
     }
   ]

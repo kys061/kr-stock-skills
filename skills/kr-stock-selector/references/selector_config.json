@@ -1,0 +1,30 @@
+{
+  "conditions": {
+    "ma_trend": {
+      "window": 200,
+      "days": 20,
+      "flat_threshold": 0.001
+    },
+    "ma_alignment": {
+      "sma_periods": [50, 150, 200]
+    },
+    "week52_low": {
+      "threshold": 0.30,
+      "lookback_days": 250
+    },
+    "week52_high": {
+      "threshold": -0.25,
+      "lookback_days": 250
+    },
+    "market_cap": {
+      "min_krw": 100000000000
+    }
+  },
+  "universe": {
+    "markets": ["KOSPI", "KOSDAQ"],
+    "min_trading_days": 220
+  },
+  "report": {
+    "watch_list_min_pass": 4
+  }
+}
