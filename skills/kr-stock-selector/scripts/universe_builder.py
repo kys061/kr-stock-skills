@@ -239,11 +239,33 @@ def _build_from_yf_screener(
 
         if universe:
             logger.info(f"yf.screen()으로 {len(universe)}개 종목 확보")
+            _resolve_korean_names(universe)
         return universe
 
     except Exception as e:
         logger.warning(f"yf.screen() 실패: {e}")
         return []
+
+
+def _resolve_korean_names(universe: list[dict]) -> None:
+    """유니버스의 영문 종목명을 한글로 변환 (in-place)."""
+    try:
+        from pykrx import stock as pykrx_stock
+    except ImportError:
+        return
+
+    resolved = 0
+    for item in universe:
+        try:
+            kr_name = pykrx_stock.get_market_ticker_name(item['ticker'])
+            if kr_name:
+                item['name'] = kr_name
+                resolved += 1
+        except Exception:
+            continue
+
+    if resolved:
+        logger.info(f"한글명 변환: {resolved}/{len(universe)}개")
 
 
 def _get_etf_holdings(yf, market: str) -> list[str]:
