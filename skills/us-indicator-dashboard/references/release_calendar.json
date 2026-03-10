@@ -1,0 +1,53 @@
+{
+  "2026-03": {
+    "events": [
+      {"date": "2026-03-01", "indicator": "ism_pmi", "name": "ISM 제조업 PMI (2월)"},
+      {"date": "2026-03-07", "indicator": "unemployment", "name": "고용보고서 (2월)"},
+      {"date": "2026-03-12", "indicator": "cpi", "name": "CPI (2월)"},
+      {"date": "2026-03-13", "indicator": "ppi", "name": "PPI (2월)"},
+      {"date": "2026-03-14", "indicator": "inflation_exp", "name": "UMich 인플레 기대 (3월 예비)"},
+      {"date": "2026-03-14", "indicator": "consumer_sentiment", "name": "소비자심리 (3월 예비)"},
+      {"date": "2026-03-17", "indicator": "retail_sales", "name": "소매판매 (2월)"},
+      {"date": "2026-03-18", "indicator": "housing_starts", "name": "주택착공 (2월)"},
+      {"date": "2026-03-19", "indicator": "fed_rate", "name": "FOMC 금리 결정"},
+      {"date": "2026-03-20", "indicator": "current_account", "name": "경상수지 (Q4)"},
+      {"date": "2026-03-25", "indicator": "consumer_confidence", "name": "소비자신뢰 (3월)"},
+      {"date": "2026-03-28", "indicator": "pce", "name": "Core PCE (2월)"},
+      {"date": "2026-03-28", "indicator": "gdp", "name": "GDP (Q4 확정)"}
+    ]
+  },
+  "2026-04": {
+    "events": [
+      {"date": "2026-04-01", "indicator": "ism_pmi", "name": "ISM 제조업 PMI (3월)"},
+      {"date": "2026-04-04", "indicator": "unemployment", "name": "고용보고서 (3월)"},
+      {"date": "2026-04-10", "indicator": "cpi", "name": "CPI (3월)"},
+      {"date": "2026-04-11", "indicator": "ppi", "name": "PPI (3월)"},
+      {"date": "2026-04-16", "indicator": "retail_sales", "name": "소매판매 (3월)"},
+      {"date": "2026-04-17", "indicator": "housing_starts", "name": "주택착공 (3월)"},
+      {"date": "2026-04-25", "indicator": "consumer_confidence", "name": "소비자신뢰 (4월)"},
+      {"date": "2026-04-30", "indicator": "pce", "name": "Core PCE (3월)"},
+      {"date": "2026-04-30", "indicator": "gdp", "name": "GDP (Q1 속보)"}
+    ]
+  },
+  "fomc_dates_2026": [
+    "2026-01-29", "2026-03-19", "2026-05-07", "2026-06-18",
+    "2026-07-30", "2026-09-17", "2026-11-05", "2026-12-17"
+  ],
+  "release_patterns": {
+    "cpi": {"name_kr": "CPI", "importance": 5},
+    "ppi": {"name_kr": "PPI", "importance": 3},
+    "pce": {"name_kr": "PCE", "importance": 5},
+    "unemployment": {"name_kr": "고용보고서", "importance": 5},
+    "jobless_claims": {"name_kr": "실업수당", "importance": 2},
+    "retail_sales": {"name_kr": "소매판매", "importance": 4},
+    "ism_pmi": {"name_kr": "ISM PMI", "importance": 4},
+    "consumer_sentiment": {"name_kr": "소비자심리", "importance": 3},
+    "consumer_confidence": {"name_kr": "소비자신뢰", "importance": 3},
+    "gdp": {"name_kr": "GDP", "importance": 5},
+    "fed_rate": {"name_kr": "FOMC 금리결정", "importance": 5},
+    "housing_starts": {"name_kr": "주택착공", "importance": 2},
+    "business_inventories": {"name_kr": "기업재고", "importance": 2},
+    "inflation_exp": {"name_kr": "인플레 기대", "importance": 3},
+    "current_account": {"name_kr": "경상수지", "importance": 3}
+  }
+}

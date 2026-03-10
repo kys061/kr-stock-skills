@@ -1,0 +1,215 @@
+{
+  "indicators": [
+    {
+      "id": "gdp",
+      "name_kr": "경제성장률 (실질GDP 증가율)",
+      "name_en": "Real GDP Growth Rate (Annualized)",
+      "category": "growth",
+      "unit": "%",
+      "frequency": "quarterly",
+      "source": "BEA",
+      "target": 2.0,
+      "thresholds": {"strong": 3.0, "moderate": 2.0, "weak": 1.0, "recession": 0.0}
+    },
+    {
+      "id": "fed_rate",
+      "name_kr": "기준금리",
+      "name_en": "Federal Funds Rate",
+      "category": "rates",
+      "unit": "%",
+      "frequency": "fomc",
+      "source": "Fed"
+    },
+    {
+      "id": "treasury_2y",
+      "name_kr": "국고채 2년",
+      "name_en": "2-Year Treasury Yield",
+      "category": "rates",
+      "unit": "%",
+      "frequency": "daily",
+      "source": "yfinance",
+      "ticker": "2YY=F"
+    },
+    {
+      "id": "treasury_10y",
+      "name_kr": "국고채 10년",
+      "name_en": "10-Year Treasury Yield",
+      "category": "rates",
+      "unit": "%",
+      "frequency": "daily",
+      "source": "yfinance",
+      "ticker": "^TNX"
+    },
+    {
+      "id": "cpi",
+      "name_kr": "CPI (소비자물가지수)",
+      "name_en": "CPI YoY",
+      "category": "inflation",
+      "unit": "%",
+      "frequency": "monthly",
+      "source": "BLS",
+      "target": 2.0,
+      "thresholds": {"low": 2.0, "moderate": 3.0, "high": 4.0, "very_high": 5.0}
+    },
+    {
+      "id": "pce",
+      "name_kr": "PCE (개인소비지출)",
+      "name_en": "Core PCE YoY",
+      "category": "inflation",
+      "unit": "%",
+      "frequency": "monthly",
+      "source": "BEA",
+      "target": 2.0,
+      "note": "Fed preferred inflation gauge"
+    },
+    {
+      "id": "ppi",
+      "name_kr": "PPI (생산자물가지수)",
+      "name_en": "PPI YoY",
+      "category": "inflation",
+      "unit": "%",
+      "frequency": "monthly",
+      "source": "BLS"
+    },
+    {
+      "id": "inflation_exp",
+      "name_kr": "인플레이션 기대심리",
+      "name_en": "UMich Inflation Expectations 1Y",
+      "category": "inflation",
+      "unit": "%",
+      "frequency": "monthly",
+      "source": "University of Michigan"
+    },
+    {
+      "id": "unemployment",
+      "name_kr": "실업률",
+      "name_en": "Unemployment Rate",
+      "category": "economy",
+      "unit": "%",
+      "frequency": "monthly",
+      "source": "BLS",
+      "thresholds": {"tight": 3.5, "balanced": 4.0, "loose": 5.0, "recession": 6.0}
+    },
+    {
+      "id": "weekly_hours",
+      "name_kr": "평균주당근무시간 (생산량)",
+      "name_en": "Average Weekly Hours (Production)",
+      "category": "economy",
+      "unit": "hrs",
+      "frequency": "monthly",
+      "source": "BLS",
+      "baseline": 34.0
+    },
+    {
+      "id": "hourly_earnings",
+      "name_kr": "평균시간당소득 (전월대비)",
+      "name_en": "Average Hourly Earnings MoM",
+      "category": "economy",
+      "unit": "%",
+      "frequency": "monthly",
+      "source": "BLS",
+      "thresholds": {"moderate": 0.3, "elevated": 0.4, "hot": 0.5}
+    },
+    {
+      "id": "real_earnings",
+      "name_kr": "실질임금 (전월대비)",
+      "name_en": "Real Earnings MoM",
+      "category": "economy",
+      "unit": "%",
+      "frequency": "monthly",
+      "source": "BLS"
+    },
+    {
+      "id": "jobless_claims",
+      "name_kr": "신규 실업수당청구건수",
+      "name_en": "Initial Jobless Claims",
+      "category": "economy",
+      "unit": "K",
+      "frequency": "weekly",
+      "source": "DOL",
+      "thresholds": {"healthy": 200, "moderate": 250, "concerning": 300, "recession": 350}
+    },
+    {
+      "id": "retail_sales",
+      "name_kr": "소매판매",
+      "name_en": "Retail Sales MoM",
+      "category": "economy",
+      "unit": "%",
+      "frequency": "monthly",
+      "source": "Census Bureau"
+    },
+    {
+      "id": "ism_pmi",
+      "name_kr": "ISM 제조업 PMI",
+      "name_en": "ISM Manufacturing PMI",
+      "category": "leading",
+      "unit": "index",
+      "frequency": "monthly",
+      "source": "ISM",
+      "baseline": 50.0,
+      "thresholds": {"expansion": 50.0, "strong": 55.0, "contraction": 45.0, "deep_contraction": 40.0},
+      "note": "50 이상 확장, 50 이하 수축"
+    },
+    {
+      "id": "consumer_sentiment",
+      "name_kr": "소비자심리지수",
+      "name_en": "UMich Consumer Sentiment",
+      "category": "leading",
+      "unit": "index",
+      "frequency": "monthly",
+      "source": "University of Michigan",
+      "baseline": 100.0,
+      "note": "예비(월중) + 확정(월말) 2회 발표"
+    },
+    {
+      "id": "consumer_confidence",
+      "name_kr": "소비자신뢰지수",
+      "name_en": "CB Consumer Confidence Index",
+      "category": "leading",
+      "unit": "index",
+      "frequency": "monthly",
+      "source": "Conference Board",
+      "baseline": 100.0,
+      "note": "1985=100 기준"
+    },
+    {
+      "id": "business_inventories",
+      "name_kr": "기업재고 (전월대비)",
+      "name_en": "Business Inventories MoM",
+      "category": "coincident",
+      "unit": "%",
+      "frequency": "monthly",
+      "source": "Census Bureau"
+    },
+    {
+      "id": "housing_starts",
+      "name_kr": "주택착공건수 (전월대비)",
+      "name_en": "Housing Starts MoM",
+      "category": "coincident",
+      "unit": "%",
+      "frequency": "monthly",
+      "source": "Census Bureau",
+      "note": "건설/원자재 수요 선행 지표"
+    },
+    {
+      "id": "auto_sales",
+      "name_kr": "자동차등록건수",
+      "name_en": "Auto Sales (SAAR)",
+      "category": "coincident",
+      "unit": "M",
+      "frequency": "monthly",
+      "source": "BEA",
+      "thresholds": {"strong": 17.0, "moderate": 15.0, "weak": 13.0}
+    },
+    {
+      "id": "current_account",
+      "name_kr": "경상수지",
+      "name_en": "Current Account Balance",
+      "category": "external",
+      "unit": "$B",
+      "frequency": "quarterly",
+      "source": "BEA",
+      "note": "적자 확대 → 달러 약세 압력 → 신흥국 자금 유입"
+    }
+  ]
+}

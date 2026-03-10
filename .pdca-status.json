@@ -316,5 +316,46 @@
         "details": "Phase 9 PDCA 완료 보고서 생성. 5개 한국 시장 전용 스킬 구현, 97% Match Rate, 340 테스트 통과, Major Gap 0개. kr-supply-demand-analyzer(시장수급7시그널+14섹터HHI+유동성4등급/90tests), kr-short-sale-tracker(잔고비율5단계+숏커버5시그널+스퀴즈확률/53tests), kr-credit-monitor(시총대비5단계+담보유지140%+반대매매3시나리오/45tests), kr-program-trade-analyzer(차익비차익+KOSPI200베이시스5상태+만기일효과/56tests), kr-dart-disclosure-monitor(10공시유형+영향도5단계+지분변동5시그널/96tests). Phase 1-9 총 44개 모듈 완성 (공통 1 + 7 시장 분석 + 5 마켓 타이밍 + 7 종목 스크리닝 + 4 캘린더/실적 + 9 전략/리스크 + 3 배당/세제 + 4 메타/유틸 + 5 한국전용). 누적 1,742 테스트. Phase 3-9 연속 7회 97% Match Rate. 프로젝트 완료."
       }
     ]
+  },
+  "us-indicator-dashboard": {
+    "phase": "check",
+    "matchRate": 97,
+    "iterationCount": 0,
+    "startedAt": "2026-03-10T09:56:14Z",
+    "history": [
+      {
+        "action": "plan_created",
+        "timestamp": "2026-03-10T09:56:14Z",
+        "details": "21개 미국 경제지표 자동 수집 스킬 Plan 작성. 7개 카테고리(성장/금리/물가/경기/선행/동행/대외), 5-컴포넌트 레짐 판정, 한국 시장 영향 분석."
+      },
+      {
+        "action": "design_created",
+        "timestamp": "2026-03-10T10:08:37Z",
+        "details": "상세 설계 완료. 6개 모듈(collector/regime/impact/calendar/report/orchestrator), 14개 검증 기준(V-01~V-14), 44+ 테스트 목표, ~1,790 LOC."
+      },
+      {
+        "action": "do_completed",
+        "timestamp": "2026-03-10T11:00:00Z",
+        "details": "구현 완료. 6개 모듈 + 2개 참조파일 + 5개 테스트파일 + SKILL.md = 14 파일. 95/95 테스트 통과 (설계 44+ 대비 216%). 21개 지표, 42개 임팩트 룰, 5-컴포넌트 레짐 판정, 4-Section 리포트 생성."
+      },
+      {
+        "action": "check_completed",
+        "timestamp": "2026-03-10T12:00:00Z",
+        "details": "Gap Analysis 완료 - Match Rate 97% (>= 90% PASS). 0 Major + 3 Minor gaps. V-01~V-14 검증 기준 13/14 완전 통과. Minor: REGIME_DESCRIPTIONS color key 미포함(미사용), classify_regime reasoning 필드 미포함(테이블로 대체), SKILL.md 파라미터화 쿼리(개선 방향). 95 테스트 전체 통과."
+      }
+    ]
+  },
+  "kr-stock-selector": {
+    "phase": "plan",
+    "matchRate": null,
+    "iterationCount": 0,
+    "startedAt": "2026-03-11T09:00:00Z",
+    "history": [
+      {
+        "action": "plan_created",
+        "timestamp": "2026-03-11T09:00:00Z",
+        "details": "주식종목선별 5조건(200MA추세20일/4중정배열/52주저가+30%/52주고가-25%/시총1000억) 자동 스크리닝 스킬 Plan 작성. 유니버스빌더+트렌드분석기+리포트생성기 3모듈. ~910 LOC, 22+ 테스트."
+      }
+    ]
   }
 }
