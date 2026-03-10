@@ -71,8 +71,8 @@ def build_pass_table(results: list[dict]) -> str:
 
     lines = [
         "\n---\n\n## 통과 종목\n",
-        "| # | 종목코드 | 종목명 | 시장 | 시총(억) | 현재가 | 52주대비저 | 52주대비고 |",
-        "|---|---------|--------|------|-------:|------:|:---------:|:---------:|",
+        "| # | 종목코드 | 종목명 | 섹터 | 시장 | 시총(억) | 현재가 | 52주대비저 | 52주대비고 |",
+        "|---|---------|--------|------|------|-------:|------:|:---------:|:---------:|",
     ]
 
     for i, r in enumerate(passed, 1):
@@ -80,8 +80,9 @@ def build_pass_table(results: list[dict]) -> str:
         mcap_eok = r.get('market_cap', 0) / 1e8
         low_pct = details.get('week52_low_pct', 0) * 100
         high_pct = details.get('week52_high_pct', 0) * 100
+        sector = r.get('sector', '미분류') or '미분류'
         lines.append(
-            f"| {i} | {r['ticker']} | {r['name']} | {r['market']} "
+            f"| {i} | {r['ticker']} | {r['name']} | {sector} | {r['market']} "
             f"| {mcap_eok:,.0f} | {r.get('close', 0):,} "
             f"| +{low_pct:.1f}% | {high_pct:+.1f}% |"
         )
@@ -129,13 +130,14 @@ def build_watch_list(results: list[dict], min_pass: int = 4) -> str:
 
     lines = [
         f"\n---\n\n## Watch List ({min_pass}/5 통과)\n",
-        "| 종목코드 | 종목명 | 미충족 조건 | 현재 수치 | 필요 수치 |",
-        "|---------|--------|-----------|:--------:|:--------:|",
+        "| 종목코드 | 종목명 | 섹터 | 미충족 조건 | 현재 수치 | 필요 수치 |",
+        "|---------|--------|------|-----------|:--------:|:--------:|",
     ]
 
     for r in watch:
         conditions = r.get('conditions', {})
         details = r.get('details', {})
+        sector = r.get('sector', '미분류') or '미분류'
 
         # 미충족 조건 찾기
         failed = [k for k, v in conditions.items() if not v]
@@ -143,7 +145,7 @@ def build_watch_list(results: list[dict], min_pass: int = 4) -> str:
             current_val, need_val = _get_gap_values(key, details)
             desc = CONDITION_NAMES.get(key, key)
             lines.append(
-                f"| {r['ticker']} | {r['name']} | {desc} | {current_val} | {need_val} |"
+                f"| {r['ticker']} | {r['name']} | {sector} | {desc} | {current_val} | {need_val} |"
             )
 
     return '\n'.join(lines) + '\n'

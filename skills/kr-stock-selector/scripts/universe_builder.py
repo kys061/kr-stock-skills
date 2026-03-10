@@ -25,6 +25,21 @@ CONFIG_PATH = os.path.join(
 # 시장별 yfinance 접미사
 MARKET_SUFFIX = {'KOSPI': '.KS', 'KOSDAQ': '.KQ'}
 
+# yfinance 섹터 → 한글 매핑
+SECTOR_KR = {
+    'Technology': '기술',
+    'Financial Services': '금융',
+    'Healthcare': '헬스케어',
+    'Consumer Cyclical': '경기소비재',
+    'Consumer Defensive': '필수소비재',
+    'Industrials': '산업재',
+    'Basic Materials': '소재',
+    'Energy': '에너지',
+    'Communication Services': '커뮤니케이션',
+    'Utilities': '유틸리티',
+    'Real Estate': '부동산',
+}
+
 
 def load_config() -> dict:
     """selector_config.json 로드."""
@@ -139,6 +154,7 @@ def _build_from_krx(
             'market_cap': int(row.get('MKTCAP', 0)),
             'yf_ticker': to_yf_ticker(ticker, mkt),
             'close': int(row.get('TDD_CLSPRC', 0)),
+            'sector': '',
         }
         universe.append(stock)
 
@@ -231,6 +247,7 @@ def _build_from_yf_screener(
                 ticker_code = sym.split('.')[0]
                 mcap = q.get('marketCap', 0) or 0
 
+                en_sector = q.get('sector', '')
                 universe.append({
                     'ticker': ticker_code,
                     'name': q.get('shortName', q.get('longName', '')),
@@ -239,6 +256,7 @@ def _build_from_yf_screener(
                     'yf_ticker': sym,
                     'close': int(q.get('regularMarketPrice',
                                       q.get('regularMarketPreviousClose', 0)) or 0),
+                    'sector': SECTOR_KR.get(en_sector, en_sector) or '미분류',
                 })
 
             total = result.get('total', 0)
@@ -275,6 +293,49 @@ def _resolve_korean_names(universe: list[dict]) -> None:
 
     if resolved:
         logger.info(f"한글명 변환: {resolved}/{len(universe)}개")
+
+
+def resolve_sectors(items: list[dict], max_workers: int = 20) -> None:
+    """섹터 미분류 종목의 섹터를 yfinance Ticker.info로 보완 (in-place).
+
+    병렬 처리로 빠르게 조회. 통과/Watch 종목 등 소수에만 호출 권장.
+    """
+    missing = [s for s in items if not s.get('sector') or s['sector'] == '미분류']
+    if not missing:
+        return
+
+    try:
+        import yfinance as yf
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+    except ImportError:
+        return
+
+    def _fetch_sector(yf_ticker: str) -> tuple[str, str]:
+        try:
+            info = yf.Ticker(yf_ticker).info or {}
+            return yf_ticker, info.get('sector', '')
+        except Exception:
+            return yf_ticker, ''
+
+    yf_map = {s.get('yf_ticker', to_yf_ticker(s['ticker'], s.get('market', 'KOSPI'))): s
+              for s in missing}
+
+    sector_map = {}
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        futures = {pool.submit(_fetch_sector, sym): sym for sym in yf_map}
+        for future in as_completed(futures):
+            sym, en_sector = future.result()
+            sector_map[sym] = SECTOR_KR.get(en_sector, en_sector) if en_sector else ''
+
+    resolved = 0
+    for sym, item in yf_map.items():
+        kr_sector = sector_map.get(sym, '')
+        item['sector'] = kr_sector or '미분류'
+        if kr_sector:
+            resolved += 1
+
+    if resolved:
+        logger.info(f"섹터 보완: {resolved}/{len(missing)}개")
 
 
 def _get_etf_holdings(yf, market: str) -> list[str]:
@@ -332,6 +393,7 @@ def _check_tickers_mcap(
 
                     ticker_code = sym.split('.')[0]
                     mkt = 'KOSDAQ' if sym.endswith('.KQ') else 'KOSPI'
+                    en_sector = info.get('sector', '')
                     universe.append({
                         'ticker': ticker_code,
                         'name': info.get('shortName', info.get('longName', '')),
@@ -340,6 +402,7 @@ def _check_tickers_mcap(
                         'yf_ticker': sym,
                         'close': int(info.get('currentPrice',
                                               info.get('previousClose', 0)) or 0),
+                        'sector': SECTOR_KR.get(en_sector, en_sector) or '미분류',
                     })
                 except Exception:
                     continue

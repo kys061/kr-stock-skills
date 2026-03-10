@@ -28,7 +28,7 @@ if os.path.exists(_env_path):
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from universe_builder import load_config, build_universe, fetch_ohlcv_batch
+from universe_builder import load_config, build_universe, fetch_ohlcv_batch, resolve_sectors
 from trend_analyzer import analyze_stock
 from report_generator import generate_report, save_report
 
@@ -137,15 +137,22 @@ def run(
                 market=stock['market'],
                 market_cap=stock['market_cap'],
                 config=conditions_cfg,
+                sector=stock.get('sector', ''),
             )
             results.append(result)
         except Exception as e:
             errors.append(f"{ticker} ({stock['name']}): {e}")
             continue  # fail-safe
 
-    # Step 5: 리포트 생성
+    # Step 5: 섹터 보완 (통과 + Watch 종목만 병렬 조회)
     passed = [r for r in results if r.get('all_pass')]
     watch = [r for r in results if r.get('pass_count', 0) == 4]
+    needs_sector = [r for r in passed + watch if not r.get('sector') or r['sector'] == '미분류']
+    if needs_sector:
+        logger.info(f"섹터 조회: {len(needs_sector)}개 종목")
+        resolve_sectors(needs_sector)
+
+    # Step 6: 리포트 생성
     market_filter = market or "ALL"
 
     try:

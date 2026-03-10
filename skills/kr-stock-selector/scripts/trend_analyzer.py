@@ -172,6 +172,7 @@ def analyze_stock(
     market: str,
     market_cap: int,
     config: dict = None,
+    sector: str = '',
 ) -> dict:
     """단일 종목 5조건 통합 판정.
 
@@ -179,6 +180,7 @@ def analyze_stock(
         df: OHLCV DataFrame (Close, High, Low 컬럼 필수)
         ticker, name, market, market_cap: 종목 정보
         config: selector_config.json의 conditions 딕셔너리
+        sector: 섹터 분류
 
     Returns:
         AnalysisResult dict
@@ -237,6 +239,7 @@ def analyze_stock(
         'market': market,
         'market_cap': market_cap,
         'close': current_close,
+        'sector': sector,
         'conditions': conditions,
         'details': {
             'ma_trend_days': c1_days,
