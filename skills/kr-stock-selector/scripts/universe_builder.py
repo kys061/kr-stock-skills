@@ -150,7 +150,8 @@ def _build_from_yfinance(
 ) -> list[dict]:
     """yfinance 폴백으로 유니버스 구축.
 
-    KOSPI/KOSDAQ 주요 종목을 조회하여 시총 필터링.
+    yf.screen() EquityQuery로 한국 시장 시총 필터링.
+    ETF holdings 방식 실패 시 screener API 사용.
     """
     try:
         import yfinance as yf
@@ -158,14 +159,100 @@ def _build_from_yfinance(
         logger.error("yfinance not installed")
         return []
 
-    # 주요 지수 구성종목 조회
+    # 방법 1: yf.screen() EquityQuery (yfinance >= 1.2.0)
+    universe = _build_from_yf_screener(yf, market, min_market_cap)
+    if universe:
+        return universe
+
+    # 방법 2: ETF holdings (yfinance 구버전)
+    tickers_to_check = _get_etf_holdings(yf, market)
+
+    # 방법 3: pykrx 폴백으로 전 종목 리스트 확보
+    if not tickers_to_check:
+        tickers_to_check = _get_tickers_from_pykrx(market)
+
+    if not tickers_to_check:
+        return []
+
+    # 배치로 시총 조회
+    return _check_tickers_mcap(yf, tickers_to_check, min_market_cap)
+
+
+def _build_from_yf_screener(
+    yf,
+    market: str,
+    min_market_cap: int,
+) -> list[dict]:
+    """yf.screen() + EquityQuery로 한국 시총 필터 종목 조회."""
+    try:
+        from yfinance import EquityQuery
+    except ImportError:
+        return []
+
+    try:
+        query = EquityQuery('AND', [
+            EquityQuery('EQ', ['region', 'kr']),
+            EquityQuery('GT', ['intradaymarketcap', min_market_cap]),
+        ])
+
+        universe = []
+        offset = 0
+        page_size = 250
+
+        while True:
+            result = yf.screen(query, sortField='intradaymarketcap',
+                               sortAsc=False, size=page_size, offset=offset)
+            if not result:
+                break
+
+            quotes = result.get('quotes', [])
+            if not quotes:
+                break
+
+            for q in quotes:
+                sym = q.get('symbol', '')
+                if not sym:
+                    continue
+
+                # 시장 필터
+                mkt = 'KOSDAQ' if sym.endswith('.KQ') else 'KOSPI'
+                if market and mkt != market:
+                    continue
+
+                ticker_code = sym.split('.')[0]
+                mcap = q.get('marketCap', 0) or 0
+
+                universe.append({
+                    'ticker': ticker_code,
+                    'name': q.get('shortName', q.get('longName', '')),
+                    'market': mkt,
+                    'market_cap': int(mcap),
+                    'yf_ticker': sym,
+                    'close': int(q.get('regularMarketPrice',
+                                      q.get('regularMarketPreviousClose', 0)) or 0),
+                })
+
+            total = result.get('total', 0)
+            offset += page_size
+            if offset >= total:
+                break
+
+        if universe:
+            logger.info(f"yf.screen()으로 {len(universe)}개 종목 확보")
+        return universe
+
+    except Exception as e:
+        logger.warning(f"yf.screen() 실패: {e}")
+        return []
+
+
+def _get_etf_holdings(yf, market: str) -> list[str]:
+    """ETF holdings에서 구성종목 티커 추출 (yfinance 구버전 호환)."""
     tickers_to_check = []
 
     if market in (None, 'KOSPI'):
-        # KOSPI 200 ETF에서 대형주 추출 시도
         try:
             kospi_etf = yf.Ticker("069500.KS")  # KODEX 200
-            info = kospi_etf.info or {}
             holdings = kospi_etf.get_holdings() if hasattr(kospi_etf, 'get_holdings') else None
             if holdings is not None and not holdings.empty:
                 for _, h in holdings.iterrows():
@@ -187,14 +274,15 @@ def _build_from_yfinance(
         except Exception:
             pass
 
-    # pykrx 폴백으로 전 종목 리스트 확보
-    if not tickers_to_check:
-        tickers_to_check = _get_tickers_from_pykrx(market)
+    return tickers_to_check
 
-    if not tickers_to_check:
-        return []
 
-    # 배치로 시총 조회
+def _check_tickers_mcap(
+    yf,
+    tickers_to_check: list[str],
+    min_market_cap: int,
+) -> list[dict]:
+    """티커 리스트에서 시총 필터링하여 유니버스 구축."""
     universe = []
     batch_size = 50
     for i in range(0, len(tickers_to_check), batch_size):
@@ -219,7 +307,8 @@ def _build_from_yfinance(
                         'market': mkt,
                         'market_cap': int(mcap),
                         'yf_ticker': sym,
-                        'close': int(info.get('currentPrice', info.get('previousClose', 0)) or 0),
+                        'close': int(info.get('currentPrice',
+                                              info.get('previousClose', 0)) or 0),
                     })
                 except Exception:
                     continue
