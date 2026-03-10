@@ -106,8 +106,27 @@ def _build_from_krx(
     market: str,
     min_market_cap: int,
 ) -> list[dict]:
-    """KRX Open API로 유니버스 구축."""
-    df = provider.get_stock_daily(date, market=market)
+    """KRX Open API로 유니버스 구축.
+
+    KRX 데이터 반영 지연(1-5일)을 고려하여 최근 영업일을 자동 탐색한다.
+    """
+    from datetime import datetime as dt, timedelta
+
+    # 주어진 날짜부터 최대 7일 전까지 시도
+    try:
+        base = dt.strptime(date, '%Y-%m-%d')
+    except ValueError:
+        base = dt.strptime(date, '%Y%m%d')
+
+    df = pd.DataFrame()
+    for offset in range(8):
+        d = base - timedelta(days=offset)
+        d_str = d.strftime('%Y%m%d')
+        df = provider.get_stock_daily(d_str, market=market)
+        if not df.empty:
+            logger.info(f"KRX 데이터 날짜: {d_str} ({offset}일 전)")
+            break
+
     if df.empty:
         return []
 

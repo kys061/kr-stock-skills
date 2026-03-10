@@ -11,6 +11,21 @@ import logging
 import os
 import sys
 
+# .env 로딩 (KRX_API_KEY 등)
+_env_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', '.env')
+if os.path.exists(_env_path):
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(_env_path)
+    except ImportError:
+        # dotenv 없으면 직접 파싱
+        with open(_env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    k, v = line.split('=', 1)
+                    os.environ.setdefault(k.strip(), v.strip().strip("'\""))
+
 sys.path.insert(0, os.path.dirname(__file__))
 
 from universe_builder import load_config, build_universe, fetch_ohlcv_batch
