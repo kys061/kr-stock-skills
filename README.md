@@ -1221,7 +1221,7 @@ kr-stock-skills/
 | Patch | 뉴스 톤 (kr-news-tone-analyzer) | 1 | 23 | - | Done |
 | New | 장초반 브리핑 (kr-morning-briefing) | 1 | 78 | - | Done |
 | New | 미국 경제지표 대시보드 (us-indicator-dashboard) | 1 | 95 | 97% | Done |
-| **Total** | | **54** | **2,366** | | |
+| **Total** | | **56** | **2,399** | | |
 
 ### Requirements
 
