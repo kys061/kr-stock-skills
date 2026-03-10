@@ -108,27 +108,17 @@ def _build_from_krx(
 ) -> list[dict]:
     """KRX Open API로 유니버스 구축.
 
-    KRX 데이터 반영 지연(1-5일)을 고려하여 최근 영업일을 자동 탐색한다.
+    요청 날짜의 데이터만 조회한다. 데이터가 없으면 빈 리스트를 반환하여
+    yfinance 폴백으로 진행한다 (최신 데이터 우선 원칙).
     """
-    from datetime import datetime as dt, timedelta
-
-    # 주어진 날짜부터 최대 7일 전까지 시도
-    try:
-        base = dt.strptime(date, '%Y-%m-%d')
-    except ValueError:
-        base = dt.strptime(date, '%Y%m%d')
-
-    df = pd.DataFrame()
-    for offset in range(8):
-        d = base - timedelta(days=offset)
-        d_str = d.strftime('%Y%m%d')
-        df = provider.get_stock_daily(d_str, market=market)
-        if not df.empty:
-            logger.info(f"KRX 데이터 날짜: {d_str} ({offset}일 전)")
-            break
+    d_str = date.replace('-', '')
+    df = provider.get_stock_daily(d_str, market=market)
 
     if df.empty:
+        logger.info(f"KRX 데이터 없음 ({d_str}) → yfinance 폴백 진행")
         return []
+
+    logger.info(f"KRX 데이터 날짜: {d_str}, {len(df)}종목")
 
     # 시가총액 필터
     df = df[df['MKTCAP'] >= min_market_cap].copy()
