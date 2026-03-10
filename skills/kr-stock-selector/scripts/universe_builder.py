@@ -28,19 +28,138 @@ SECTOR_MAP_PATH = os.path.join(
 # 시장별 yfinance 접미사
 MARKET_SUFFIX = {'KOSPI': '.KS', 'KOSDAQ': '.KQ'}
 
-# yfinance 섹터 → 한글 매핑
+# yfinance industry → 프로젝트 15섹터 매핑 (세분화)
+INDUSTRY_TO_SECTOR = {
+    # 반도체
+    'Semiconductors': '반도체',
+    'Semiconductor Equipment & Materials': '반도체',
+    'Semiconductor Memory': '반도체',
+    'Electronic Components': '반도체',
+    # 자동차
+    'Auto Manufacturers': '자동차',
+    'Auto Parts': '자동차',
+    # 조선
+    'Marine Shipping': '조선',
+    # 방산
+    'Aerospace & Defense': '방산',
+    # 바이오
+    'Biotechnology': '바이오',
+    'Drug Manufacturers - General': '바이오',
+    'Drug Manufacturers - Specialty & Generic': '바이오',
+    'Medical Devices': '바이오',
+    'Medical Instruments & Supplies': '바이오',
+    'Diagnostics & Research': '바이오',
+    'Health Information Services': '바이오',
+    'Pharmaceutical Retailers': '바이오',
+    'Medical Distribution': '바이오',
+    'Medical Care Facilities': '바이오',
+    # 2차전지
+    'Electrical Equipment & Parts': '2차전지',
+    # 화학
+    'Specialty Chemicals': '화학',
+    'Chemicals': '화학',
+    'Agricultural Inputs': '화학',
+    'Oil & Gas Refining & Marketing': '화학',
+    # 철강
+    'Steel': '철강',
+    'Other Industrial Metals & Mining': '철강',
+    'Aluminum': '철강',
+    'Copper': '철강',
+    # 건설
+    'Engineering & Construction': '건설',
+    'Residential Construction': '건설',
+    'Building Products & Equipment': '건설',
+    # 금융
+    'Banks - Regional': '금융',
+    'Banks - Diversified': '금융',
+    'Insurance - Life': '금융',
+    'Insurance - Property & Casualty': '금융',
+    'Insurance - Diversified': '금융',
+    'Capital Markets': '금융',
+    'Asset Management': '금융',
+    'Financial Data & Stock Exchanges': '금융',
+    'Credit Services': '금융',
+    'Insurance Brokers': '금융',
+    # 통신
+    'Telecom Services': '통신',
+    'Communication Equipment': '통신',
+    # 유틸리티
+    'Utilities - Regulated Electric': '유틸리티',
+    'Utilities - Diversified': '유틸리티',
+    'Utilities - Independent Power Producers': '유틸리티',
+    'Utilities - Renewable': '유틸리티',
+    # 엔터
+    'Entertainment': '엔터',
+    'Electronic Gaming & Multimedia': '엔터',
+    'Travel Services': '엔터',
+    'Leisure': '엔터',
+    'Gambling': '엔터',
+    'Publishing': '엔터',
+    'Broadcasting': '엔터',
+    'Advertising Agencies': '엔터',
+    # IT
+    'Software - Application': 'IT',
+    'Software - Infrastructure': 'IT',
+    'Information Technology Services': 'IT',
+    'Computer Hardware': 'IT',
+    'Consumer Electronics': 'IT',
+    'Scientific & Technical Instruments': 'IT',
+    'Solar': 'IT',
+    'Security & Protection Services': 'IT',
+    'Internet Content & Information': 'IT',
+    'Specialty Industrial Machinery': 'IT',
+    'Conglomerates': 'IT',
+    # 식음료
+    'Packaged Foods': '식음료',
+    'Beverages - Non-Alcoholic': '식음료',
+    'Beverages - Brewers': '식음료',
+    'Farm Products': '식음료',
+    'Food Distribution': '식음료',
+    'Confectioners': '식음료',
+    # 유통
+    'Specialty Retail': '유통',
+    'Department Stores': '유통',
+    'Internet Retail': '유통',
+    'Apparel Retail': '유통',
+    'Home Improvement Retail': '유통',
+    'Luxury Goods': '유통',
+    'Apparel Manufacturing': '유통',
+    'Footwear & Accessories': '유통',
+    'Personal Products': '유통',
+    'Household & Personal Products': '유통',
+    # 전력기기
+    'Utilities - Regulated Gas': '전력기기',
+    # 기타 산업재 → 가장 가까운 섹터
+    'Rental & Leasing Services': '금융',
+    'Staffing & Employment Services': 'IT',
+    'Consulting Services': 'IT',
+    'Waste Management': '유틸리티',
+    'Industrial Distribution': '유통',
+    'Trucking': '자동차',
+    'Railroads': '자동차',
+    'Airlines': '유통',
+    'Packaging & Containers': '화학',
+    'Paper & Paper Products': '화학',
+    'Lumber & Wood Production': '건설',
+    'REIT - Diversified': '금융',
+    'REIT - Office': '금융',
+    'Real Estate Services': '금융',
+    'Real Estate - Diversified': '금융',
+}
+
+# yfinance GICS 섹터 → 프로젝트 섹터 (industry 매핑 실패 시 폴백)
 SECTOR_KR = {
-    'Technology': '기술',
+    'Technology': 'IT',
     'Financial Services': '금융',
-    'Healthcare': '헬스케어',
-    'Consumer Cyclical': '경기소비재',
-    'Consumer Defensive': '필수소비재',
-    'Industrials': '산업재',
-    'Basic Materials': '소재',
-    'Energy': '에너지',
-    'Communication Services': '커뮤니케이션',
+    'Healthcare': '바이오',
+    'Consumer Cyclical': '유통',
+    'Consumer Defensive': '식음료',
+    'Industrials': '철강',
+    'Basic Materials': '화학',
+    'Energy': '화학',
+    'Communication Services': '통신',
     'Utilities': '유틸리티',
-    'Real Estate': '부동산',
+    'Real Estate': '금융',
 }
 
 
@@ -251,6 +370,10 @@ def _build_from_yf_screener(
                 mcap = q.get('marketCap', 0) or 0
 
                 en_sector = q.get('sector', '')
+                en_industry = q.get('industry', '')
+                kr_sector = INDUSTRY_TO_SECTOR.get(en_industry, '')
+                if not kr_sector:
+                    kr_sector = SECTOR_KR.get(en_sector, '') if en_sector else ''
                 universe.append({
                     'ticker': ticker_code,
                     'name': q.get('shortName', q.get('longName', '')),
@@ -259,7 +382,7 @@ def _build_from_yf_screener(
                     'yf_ticker': sym,
                     'close': int(q.get('regularMarketPrice',
                                       q.get('regularMarketPreviousClose', 0)) or 0),
-                    'sector': SECTOR_KR.get(en_sector, en_sector) or '미분류',
+                    'sector': kr_sector or '미분류',
                 })
 
             total = result.get('total', 0)
@@ -339,19 +462,19 @@ def resolve_sectors(items: list[dict], max_workers: int = 20) -> None:
     if not still_missing:
         return
 
-    # 2차: yfinance Ticker.info
+    # 2차: yfinance Ticker.info (industry 기반 세분화)
     try:
         import yfinance as yf
         from concurrent.futures import ThreadPoolExecutor, as_completed
     except ImportError:
         return
 
-    def _fetch_sector(yf_ticker: str) -> tuple[str, str]:
+    def _fetch_sector(yf_ticker: str) -> tuple[str, str, str]:
         try:
             info = yf.Ticker(yf_ticker).info or {}
-            return yf_ticker, info.get('sector', '')
+            return yf_ticker, info.get('sector', ''), info.get('industry', '')
         except Exception:
-            return yf_ticker, ''
+            return yf_ticker, '', ''
 
     yf_map = {s.get('yf_ticker', to_yf_ticker(s['ticker'], s.get('market', 'KOSPI'))): s
               for s in still_missing}
@@ -360,8 +483,12 @@ def resolve_sectors(items: list[dict], max_workers: int = 20) -> None:
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
         futures = {pool.submit(_fetch_sector, sym): sym for sym in yf_map}
         for future in as_completed(futures):
-            sym, en_sector = future.result()
-            sector_map[sym] = SECTOR_KR.get(en_sector, en_sector) if en_sector else ''
+            sym, en_sector, en_industry = future.result()
+            # industry 우선, sector 폴백
+            kr = INDUSTRY_TO_SECTOR.get(en_industry, '')
+            if not kr:
+                kr = SECTOR_KR.get(en_sector, '') if en_sector else ''
+            sector_map[sym] = kr
 
     yf_resolved = 0
     for sym, item in yf_map.items():
@@ -430,6 +557,10 @@ def _check_tickers_mcap(
                     ticker_code = sym.split('.')[0]
                     mkt = 'KOSDAQ' if sym.endswith('.KQ') else 'KOSPI'
                     en_sector = info.get('sector', '')
+                    en_industry = info.get('industry', '')
+                    kr_sector = INDUSTRY_TO_SECTOR.get(en_industry, '')
+                    if not kr_sector:
+                        kr_sector = SECTOR_KR.get(en_sector, '') if en_sector else ''
                     universe.append({
                         'ticker': ticker_code,
                         'name': info.get('shortName', info.get('longName', '')),
@@ -438,7 +569,7 @@ def _check_tickers_mcap(
                         'yf_ticker': sym,
                         'close': int(info.get('currentPrice',
                                               info.get('previousClose', 0)) or 0),
-                        'sector': SECTOR_KR.get(en_sector, en_sector) or '미분류',
+                        'sector': kr_sector or '미분류',
                     })
                 except Exception:
                     continue
