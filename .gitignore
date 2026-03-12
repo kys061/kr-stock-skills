@@ -46,3 +46,10 @@ scripts/
 
 # Claude Code worktrees
 .claude/
+
+# Ad-hoc analysis files (종목코드_종목명_날짜)
+[0-9][0-9][0-9][0-9][0-9][0-9]_*
+
+# bkit plugin runtime
+docs/.bkit-memory.json
+docs/.pdca-snapshots/
