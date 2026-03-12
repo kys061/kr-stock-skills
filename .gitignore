@@ -37,3 +37,12 @@ docs_cache/
 # Analysis reports (local only)
 analysis/
 CLAUDE.md
+
+# Runtime logs
+logs/
+
+# Local operational scripts (cron etc.)
+scripts/
+
+# Claude Code worktrees
+.claude/
