@@ -1206,11 +1206,7 @@ kr-stock-skills/
 │   ├── kr-news-tone-analyzer/   # Patch: 뉴스 톤 분석
 │   ├── kr-morning-briefing/     # 장 초반 종합 브리핑
 │   └── us-indicator-dashboard/  # 미국 경제지표 대시보드 (21개 지표)
-└── docs/                        # PDCA 설계 문서
-    ├── 01-plan/
-    ├── 02-design/
-    ├── 03-analysis/
-    └── 04-report/
+└── install.sh                   # 설치 스크립트
 ```
 
 ---
